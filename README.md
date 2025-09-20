@@ -40,14 +40,18 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
    pip install -r requirements.txt
 
 3. **Execute o sistema**
-   - para rodar no terminal
-   ```bash
-   python main.py 
-   ```
-   - para testar a implementação no celular
-   ```bash
-   python -m uvicorn app:app --reload --host 0.0.0.0
-   ```
+   - Para rodar no terminal
+      ```bash
+      python main.py 
+      ```
+   - Para testar a implementação no celular
+      ```bash
+      python -m uvicorn app:app --reload --host 0.0.0.0
+      ```
+      No navegador do computador colar: http://localhost:8000
+      Abra o cmd do seu computador e cole: ipconfig
+      Pegue o ipv4 da sua rede sem fio, será algo parecido com isso: 192.168.0.1
+      No navegegador do celular colar: http://SEUIPV4:8000
 
 4. **Navegue pelo menu**
    - O programa apresentará um menu interativo

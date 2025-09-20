@@ -93,9 +93,9 @@ app = FastAPI(
 crm = CRM() 
 
 #---------------- Rota principal -------------------
-@app.get("/")
-def rota_principal(): #Rota de entrada para verificar se a API está funcionando.
-    return {"message": "Bem-vindo à API do CRM!"}
+@app.get("/", response_class=FileResponse)
+def pegar_html_interface(): #rota para o front-end em HTML
+    return "index.html"
 
 #-------------------------- Rotas para Contato ------------------------
 @app.get("/contatos", response_model=List[ContatoResponse], dependencies=[Depends(verificar_api_key)])
@@ -113,11 +113,6 @@ def buscar_contato_por_id(contato_id: int): #busca UM contato por id, caso não 
         status_code=404,
         detail=f"Contato com ID {contato_id} não encontrado :("
     )
-    
-#--------------------- Rota para o FrontEnd ----------------------    
-@app.get("/interface", response_class=FileResponse)
-def pegar_html_interface(): #rota para o front-end em HTML
-    return "index.html"
 
 #----------------- Pegar dados de Contato -----------------------
 @app.post("/contatos", response_model=ContatoResponse, status_code=201, dependencies=[Depends(verificar_api_key)]) #usa 2xx pq é codigo de sucesso, assim como 4xx é de erro do cliente, por exemplo.
