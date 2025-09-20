@@ -16,15 +16,24 @@
         .actions button{padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;}
         .delete-btn{background-color: #dc3545; color: white;}
         .edit-btn{background-color: #ffc107; color: black;}
+        .convert-btn{background-color: #28a745; color: white;}
+        .stage-btn{background-color: #6c757d; color: white; padding: 3px 8px; font-size: 0.8rem; margin-right: 3px;}
         .view-section{display: none;}
         .view-section.active{display: block;}
+
+        .report-card{background-color: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
+        .report-title{color: #007bff; font-size: 1.2rem; margin-bottom: 10px;}
+        .metric{font-size: 2rem; font-weight: bold; color: #28a745; margin: 10px 0;}
+        .stage-group{margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 4px;}
+        .stage-title{font-weight: bold; color: #495057; margin-bottom: 5px;}
+        .contact-item{padding: 5px 0; border-bottom: 1px solid #dee2e6; font-size: 0.9rem;}
 
         .modal{display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);}
         .modal-content{background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px;}
         .close-btn{color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;}
         form label{display: block; margin-top: 10px;}
         form input, form textarea{width: 95%; padding: 8px; margin-top: 5px;}
-        form button{margin-top: 20px;}
+        form button{margin-top: 20px; padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;}
     </style>
 </head>
 <body>
@@ -35,6 +44,7 @@
         <button id="nav-contacts" class="active">Contatos</button>
         <button id="nav-leads">Leads</button>
         <button id="nav-campaigns">Campanhas</button>
+        <button id="nav-reports">Relatórios</button>
     </nav>
 
     <div id="contacts-view" class="view-section active">
@@ -51,7 +61,7 @@
         <h2>Leads</h2>
         <table>
             <thead>
-                <tr><th>ID</th><th>Nome</th><th>Email</th><th>Fonte</th><th>Ações</th></tr>
+                <tr><th>ID</th><th>Nome</th><th>Email</th><th>Fonte</th><th>Score</th><th>Ações</th></tr>
             </thead>
             <tbody id="leadsTableBody"></tbody>
         </table>
@@ -67,6 +77,71 @@
         </table>
     </div>
 
+    <div id="reports-view" class="view-section">
+        <h2>Relatórios</h2>
+        
+        <div class="report-card">
+            <div class="report-title">Taxa de Conversão de Leads</div>
+            <div id="conversion-data">
+                <div>Carregando dados...</div>
+            </div>
+        </div>
+
+        <div class="report-card">
+            <div class="report-title">Contatos por Estágio</div>
+            <div id="pipeline-data">
+                <div>Carregando dados...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para alterar estágio -->
+    <div id="stageModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Alterar Estágio de Vendas</h2>
+            <form id="stageForm">
+                <input type="hidden" id="stageContactId">
+                <p><strong>Contato:</strong> <span id="stageContactName"></span></p>
+                <p><strong>Estágio Atual:</strong> <span id="currentStage"></span></p>
+                
+                <label for="newStage">Novo Estágio:</label>
+                <select id="newStage" required>
+                    <option value="">Selecione um estágio</option>
+                    <option value="Lead">Lead</option>
+                    <option value="Prospecto">Prospecto</option>
+                    <option value="Qualificado">Qualificado</option>
+                    <option value="Proposta">Proposta</option>
+                    <option value="Negociação">Negociação</option>
+                    <option value="Venda fechada">Venda fechada</option>
+                    <option value="Perdido">Perdido</option>
+                </select>
+                
+                <button type="submit">Alterar Estágio</button>
+            </form>
+        </div>
+    </div>
+    <div id="convertModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Converter Lead para Contato</h2>
+            <form id="convertForm">
+                <input type="hidden" id="convertLeadId">
+                <p><strong>Lead:</strong> <span id="convertLeadName"></span></p>
+                <p><strong>Email:</strong> <span id="convertLeadEmail"></span></p>
+                
+                <label for="convertTelefone">Telefone *:</label>
+                <input type="text" id="convertTelefone" required placeholder="(11) 99999-9999">
+                
+                <label for="convertEmpresa">Empresa:</label>
+                <input type="text" id="convertEmpresa" placeholder="Nome da empresa">
+                
+                <button type="submit">Converter para Contato</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modais de edição  -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -125,11 +200,10 @@
     <script>
         const apiKey = "secreto123";
 
-        // --- REFERÊNCIAS GLOBAIS ---
+        // --- NAVEGAÇÃO ---
         const navButtons = document.querySelectorAll('nav button');
         const sections = document.querySelectorAll('.view-section');
 
-        // --- LÓGICA DE NAVEGAÇÃO ---
         navButtons.forEach(button => {
             button.addEventListener('click', () => {
                 navButtons.forEach(btn => btn.classList.remove('active'));
@@ -140,10 +214,11 @@
                 if (targetViewId === 'contacts-view') fetchAndDisplayContacts();
                 if (targetViewId === 'leads-view') fetchAndDisplayLeads();
                 if (targetViewId === 'campaigns-view') fetchAndDisplayCampaigns();
+                if (targetViewId === 'reports-view') loadReports();
             });
         });
 
-        // --- LÓGICA DE CONTATOS ---
+        // --- CONTATOS ---
         async function fetchAndDisplayContacts() {
             const tableBody = document.getElementById('contactsTableBody');
             tableBody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>';
@@ -162,20 +237,22 @@
                         <td>${c.telefone}</td>
                         <td>${c.sales_stage}</td>
                         <td class="actions">
+                            <button class="stage-btn" onclick="openStageModal(${c.id}, '${c.name}', '${c.sales_stage}')">Estágio</button>
                             <button class="edit-btn" onclick="openEditModal('contact', ${c.id})">Editar</button>
                             <button class="delete-btn" onclick="deleteItem('contact', ${c.id})">Deletar</button>
                         </td>`;
                     tableBody.appendChild(row);
                 });
-            } catch (error) {
+            }
+            catch (error) {
                 tableBody.innerHTML = `<tr><td colspan="6" style="color: red;">${error.message}</td></tr>`;
             }
         }
 
-        // --- LÓGICA DE LEADS ---
+        // --- LEADS ---
         async function fetchAndDisplayLeads() {
             const tableBody = document.getElementById('leadsTableBody');
-            tableBody.innerHTML = '<tr><td colspan="5">Carregando...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>';
             try {
                 const response = await fetch('/leads', { headers: { 'x-api-key': apiKey } });
                 if (!response.ok) throw new Error('Erro ao buscar leads.');
@@ -189,18 +266,21 @@
                         <td>${l.name}</td>
                         <td>${l.email}</td>
                         <td>${l.source}</td>
+                        <td>${l.score}</td>
                         <td class="actions">
+                            <button class="convert-btn" onclick="openConvertModal(${l.id}, '${l.name}', '${l.email}')">Converter</button>
                             <button class="edit-btn" onclick="openEditModal('lead', ${l.id})">Editar</button>
                             <button class="delete-btn" onclick="deleteItem('lead', ${l.id})">Deletar</button>
                         </td>`;
                     tableBody.appendChild(row);
                 });
-            } catch (error) {
-                tableBody.innerHTML = `<tr><td colspan="5" style="color: red;">${error.message}</td></tr>`;
+            }
+            catch (error) {
+                tableBody.innerHTML = `<tr><td colspan="6" style="color: red;">${error.message}</td></tr>`;
             }
         }
 
-        // --- LÓGICA DE CAMPANHAS ---
+        // --- CAMPANHAS ---
         async function fetchAndDisplayCampaigns() {
             const tableBody = document.getElementById('campaignsTableBody');
             tableBody.innerHTML = '<tr><td colspan="5">Carregando...</td></tr>';
@@ -223,12 +303,201 @@
                         </td>`;
                     tableBody.appendChild(row);
                 });
-            } catch (error) {
+            }
+            catch (error) {
                 tableBody.innerHTML = `<tr><td colspan="5" style="color: red;">${error.message}</td></tr>`;
             }
         }
 
-        // --- FUNÇÕES DE MODAL ---
+        // --- MODAL DE ALTERAR ESTÁGIO ---
+        const stageModal = document.getElementById('stageModal');
+        const stageCloseBtn = stageModal.querySelector('.close-btn');
+
+        stageCloseBtn.onclick = () => { stageModal.style.display = 'none'; };
+        window.onclick = (event) => { if (event.target == stageModal) { stageModal.style.display = 'none'; } };
+
+        function openStageModal(contactId, contactName, currentStage) {
+            document.getElementById('stageContactId').value = contactId;
+            document.getElementById('stageContactName').textContent = contactName;
+            document.getElementById('currentStage').textContent = currentStage;
+            document.getElementById('newStage').value = '';
+            stageModal.style.display = 'block';
+        }
+
+        // --- HANDLER PARA ALTERAR ESTÁGIO ---
+        document.getElementById('stageForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const contactId = document.getElementById('stageContactId').value;
+            const newStage = document.getElementById('newStage').value;
+
+            if (!newStage) {
+                alert('Por favor, selecione um novo estágio!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/contatos/${contactId}/stage`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey
+                    },
+                    body: JSON.stringify({
+                        stage: newStage
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('Estágio atualizado com sucesso!');
+                    stageModal.style.display = 'none';
+                    fetchAndDisplayContacts(); // Atualizar lista de contatos
+                }
+                else {
+                    const errorData = await response.json();
+                    alert(`Erro: ${errorData.detail}`);
+                }
+            }
+            catch (error) {
+                alert('Erro ao atualizar estágio.');
+            }
+        });
+
+        // --- FUNÇÃO PARA CARREGAR RELATÓRIOS ---
+        async function loadReports() {
+            // Carregar dados de conversão
+            try {
+                const conversionResponse = await fetch('/relatorios/conversao', { 
+                    headers: { 'x-api-key': apiKey } 
+                });
+                
+                if (conversionResponse.ok) {
+                    const conversionData = await conversionResponse.json();
+                    document.getElementById('conversion-data').innerHTML = `
+                        <div class="metric">${conversionData.taxa_conversao}%</div>
+                        <p>${conversionData.leads_convertidos} de ${conversionData.total_leads} leads foram convertidos</p>
+                    `;
+                }
+                else {
+                    document.getElementById('conversion-data').innerHTML = '<div style="color: red;">Erro ao carregar dados de conversão</div>';
+                }
+            }
+            catch (error) {
+                document.getElementById('conversion-data').innerHTML = '<div style="color: red;">Erro ao conectar com a API</div>';
+            }
+
+            // Carregar dados do pipeline
+            try {
+                const pipelineResponse = await fetch('/relatorios/info', { 
+                    headers: { 'x-api-key': apiKey } 
+                });
+                
+                if (pipelineResponse.ok) {
+                    const pipelineData = await pipelineResponse.json();
+                    let pipelineHtml = '';
+                    
+                    for (const [stage, contacts] of Object.entries(pipelineData)) {
+                        pipelineHtml += `
+                            <div class="stage-group">
+                                <div class="stage-title">${stage} (${contacts.length})</div>
+                        `;
+                        
+                        contacts.forEach(contact => {
+                            pipelineHtml += `
+                                <div class="contact-item">
+                                    <strong>${contact.nome}</strong> - ${contact.empresa} (${contact.email})
+                                </div>
+                            `;
+                        });
+                        
+                        pipelineHtml += `</div>`;
+                    }
+                    
+                    if (pipelineHtml) {
+                        document.getElementById('pipeline-data').innerHTML = pipelineHtml;
+                    }
+                    else {
+                        document.getElementById('pipeline-data').innerHTML = '<div>Nenhum dado de pipeline disponível</div>';
+                    }
+                }
+                else {
+                    document.getElementById('pipeline-data').innerHTML = '<div style="color: red;">Erro ao carregar dados do pipeline</div>';
+                }
+            }
+            catch (error) {
+                document.getElementById('pipeline-data').innerHTML = '<div style="color: red;">Erro ao conectar com a API</div>';
+            }
+        }
+        const convertModal = document.getElementById('convertModal');
+        const convertCloseBtn = convertModal.querySelector('.close-btn');
+
+        convertCloseBtn.onclick = () => { convertModal.style.display = 'none'; };
+        window.onclick = (event) => { if (event.target == convertModal) { convertModal.style.display = 'none'; } };
+
+        function openConvertModal(leadId, leadName, leadEmail) {
+            document.getElementById('convertLeadId').value = leadId;
+            document.getElementById('convertLeadName').textContent = leadName;
+            document.getElementById('convertLeadEmail').textContent = leadEmail;
+            document.getElementById('convertTelefone').value = '';
+            document.getElementById('convertEmpresa').value = '';
+            convertModal.style.display = 'block';
+        }
+
+        // --- HANDLER DO FORMULÁRIO DE CONVERSÃO ---
+        document.getElementById('convertForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const leadId = document.getElementById('convertLeadId').value;
+            const telefone = document.getElementById('convertTelefone').value;
+            const empresa = document.getElementById('convertEmpresa').value || "";
+
+            // Validação básica
+            if (!telefone.trim()) {
+                alert('Telefone é obrigatório!');
+                return;
+            }
+
+            const dadosConversao = {
+                name: document.getElementById('convertLeadName').textContent, // Nome do lead
+                email: document.getElementById('convertLeadEmail').textContent, // Email do lead
+                telefone: telefone.trim(),
+                empresa: empresa.trim(),
+                notas: ""
+            };
+
+            console.log('Enviando dados:', dadosConversao); // Para debug
+
+            try {
+                const response = await fetch(`/leads/${leadId}/converter`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey
+                    },
+                    body: JSON.stringify(dadosConversao)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('Lead convertido com sucesso!');
+                    convertModal.style.display = 'none';
+                    fetchAndDisplayLeads(); // Atualizar lista de leads
+                    fetchAndDisplayContacts(); // Atualizar lista de contatos
+                }
+                else {
+                    const errorData = await response.json();
+                    console.error('Erro da API:', errorData); // Para debug
+                    alert(`Erro: ${errorData.detail}`);
+                }
+            }
+            catch (error) {
+                console.error('Erro de conexão:', error); // Para debug
+                alert('Erro ao converter lead. Verifique sua conexão.');
+            }
+        });
+
+        // --- MODAIS DE EDIÇÃO  ---
         function setupModal(modal, closeBtn) {
             closeBtn.onclick = () => { modal.style.display = 'none'; };
             window.onclick = (event) => { if (event.target == modal) { modal.style.display = 'none'; } };
@@ -246,14 +515,15 @@
             let endpoint = '';
             let modal = null;
 
-            // Corrige o endpoint para cada tipo
             if (type === 'contact') {
                 endpoint = `/contatos/${id}`;
                 modal = contactEditModal;
-            } else if (type === 'lead') {
+            }
+            else if (type === 'lead') {
                 endpoint = `/leads/${id}`;
                 modal = leadEditModal;
-            } else if (type === 'campaign') {
+            }
+            else if (type === 'campaign') {
                 endpoint = `/campanhas/${id}`;
                 modal = campaignEditModal;
             }
@@ -270,24 +540,27 @@
                     document.getElementById('editTelefone').value = data.telefone;
                     document.getElementById('editEmpresa').value = data.empresa || '';
                     document.getElementById('editNotas').value = data.notas || '';
-                } else if (type === 'lead') {
+                }
+                else if (type === 'lead') {
                     document.getElementById('editLeadId').value = data.id;
                     document.getElementById('editLeadName').value = data.name;
                     document.getElementById('editLeadEmail').value = data.email;
                     document.getElementById('editLeadSource').value = data.source;
-                } else if (type === 'campaign') {
+                }
+                else if (type === 'campaign') {
                     document.getElementById('editCampaignId').value = data.id;
                     document.getElementById('editCampaignTitle').value = data.title;
                     document.getElementById('editCampaignDescription').value = data.description;
                     document.getElementById('editCampaignTargetStage').value = data.target_stage;
                 }
                 modal.style.display = 'block';
-            } catch (error) {
+            }
+            catch (error) {
                 alert(error.message);
             }
         }
 
-        // --- HANDLERS DE FORMULÁRIOS ---
+        // --- HANDLERS DOS FORMULÁRIOS ---
         document.getElementById('editForm').addEventListener('submit', async (event) => {
             event.preventDefault();
             const id = document.getElementById('editContactId').value;
@@ -313,12 +586,14 @@
                     contactEditModal.style.display = 'none';
                     fetchAndDisplayContacts();
                     alert('Contato atualizado com sucesso!');
-                } else {
-                    const errorData = await response.json();
-                    alert(`Erro ao atualizar: ${errorData.detail}`);
                 }
-            } catch (error) {
-                alert('Não foi possível conectar à API para atualizar.');
+                else {
+                    const errorData = await response.json();
+                    alert(`Erro: ${errorData.detail}`);
+                }
+            }
+            catch (error) {
+                alert('Erro ao atualizar contato.');
             }
         });
 
@@ -345,12 +620,14 @@
                     leadEditModal.style.display = 'none';
                     fetchAndDisplayLeads();
                     alert('Lead atualizado com sucesso!');
-                } else {
-                    const errorData = await response.json();
-                    alert(`Erro ao atualizar: ${errorData.detail}`);
                 }
-            } catch (error) {
-                alert('Não foi possível conectar à API para atualizar.');
+                else {
+                    const errorData = await response.json();
+                    alert(`Erro: ${errorData.detail}`);
+                }
+            }
+            catch (error) {
+                alert('Erro ao atualizar lead.');
             }
         });
 
@@ -377,24 +654,28 @@
                     campaignEditModal.style.display = 'none';
                     fetchAndDisplayCampaigns();
                     alert('Campanha atualizada com sucesso!');
-                } else {
-                    const errorData = await response.json();
-                    alert(`Erro ao atualizar: ${errorData.detail}`);
                 }
-            } catch (error) {
-                alert('Não foi possível conectar à API para atualizar.');
+                else {
+                    const errorData = await response.json();
+                    alert(`Erro: ${errorData.detail}`);
+                }
+            }
+            catch (error) {
+                alert('Erro ao atualizar campanha.');
             }
         });
 
         async function deleteItem(type, id) {
-            if (!confirm(`Tem certeza de que deseja deletar o ${type} com ID ${id}?`)) { return; }
+            if (!confirm(`Tem certeza de que deseja deletar?`)) { return; }
             
             let endpoint = '';
             if (type === 'contact') {
                 endpoint = `/contatos/${id}`;
-            } else if (type === 'lead') {
+            }
+            else if (type === 'lead') {
                 endpoint = `/leads/${id}`;
-            } else if (type === 'campaign') {
+            }
+            else if (type === 'campaign') {
                 endpoint = `/campanhas/${id}`;
             }
 
@@ -405,13 +686,15 @@
                 });
                 if (response.status === 204) {
                     document.getElementById(`${type}-${id}`).remove();
-                    alert(`${type.charAt(0).toUpperCase() + type.slice(1)} deletado com sucesso!`);
-                } else {
-                    const errorData = await response.json();
-                    alert(`Erro ao deletar: ${errorData.detail}`);
+                    alert('Item deletado com sucesso!');
                 }
-            } catch (error) {
-                alert(`Não foi possível conectar à API para deletar.`);
+                else {
+                    const errorData = await response.json();
+                    alert(`Erro: ${errorData.detail}`);
+                }
+            }
+            catch (error) {
+                alert('Erro ao deletar item.');
             }
         }
 

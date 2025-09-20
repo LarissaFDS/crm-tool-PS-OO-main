@@ -51,6 +51,28 @@ class CampanhaResponse(CampanhaSchema):
     class Config:
         from_attributes = True
         
+#----------------- Modelos para Atividade -------------------
+class AtividadeSchema(BaseModel):
+    type: str
+    description: str
+
+class AtividadeResponse(AtividadeSchema):
+    date: str
+    
+    class Config:
+        from_attributes = True
+
+#----------------- Modelos para Task -------------------
+class TaskSchema(BaseModel):
+    title: str
+    date: str
+
+class TaskResponse(TaskSchema):
+    completed: bool
+    
+    class Config:
+        from_attributes = True
+        
 #-------------------- Segurança minima ------------------        
 API_KEY_SECRETA = "secreto123"
 
@@ -284,3 +306,90 @@ def deletar_campanha(campanha_id: int): #Deleta uma campanha do sistema
     crm.campanhas.remove(campanha_encontrada)
     crm.save_data()
     return
+    
+#----------------- Conversão de Lead para Contato -------------------
+@app.post("/leads/{lead_id}/converter", dependencies=[Depends(verificar_api_key)])
+def converter_lead_para_contato(lead_id: int, contato_data: ContatoSchema):
+    #Buscar o lead
+    lead_encontrado = None
+    for lead in crm.leads:
+        if lead.id == lead_id:
+            lead_encontrado = lead
+            break
+    
+    if not lead_encontrado:
+        raise HTTPException(status_code=404, detail="Lead não encontrado")
+    
+    if lead_encontrado.converted:
+        raise HTTPException(status_code=400, detail="Lead já foi convertido")
+    
+    #Criar novo contato baseado no lead
+    novo_contato = Contato(
+        name=lead_encontrado.name,
+        email=lead_encontrado.email,
+        telefone=contato_data.telefone,
+        empresa=contato_data.empresa or "",
+        notas=f"Convertido do lead ID {lead_id}. Fonte: {lead_encontrado.source}"
+    )
+    
+    lead_encontrado.converted = True
+    crm.contatos.append(novo_contato)
+    crm.save_data()
+    
+    return {
+        "message": "Lead convertido com sucesso",
+        "contato": novo_contato.to_dict(),
+        "lead_id": lead_id
+    }
+
+#----------------- Atualizar Estágio de Vendas -------------------
+@app.put("/contatos/{contato_id}/stage", dependencies=[Depends(verificar_api_key)])
+def atualizar_estagio_vendas(contato_id: int, novo_estagio: dict):
+    for contato in crm.contatos:
+        if contato.id == contato_id:
+            estagio_anterior = contato.sales_stage
+            contato.sales_stage = novo_estagio["stage"]
+            contato.stage_history.append(novo_estagio["stage"])
+            
+            #Adicionar atividade automaticamente
+            from models.atividade import Atividade
+            atividade = Atividade(
+                "stage_change", 
+                f"Estágio alterado de '{estagio_anterior}' para '{novo_estagio['stage']}'"
+            )
+            contato.activities.append(atividade)
+            
+            crm.save_data()
+            return {"message": "Estágio atualizado com sucesso"}
+    
+    raise HTTPException(status_code=404, detail="Contato não encontrado")
+
+#----------------- Relatórios -------------------
+@app.get("/relatorios/conversao", dependencies=[Depends(verificar_api_key)])
+def relatorio_conversao():
+    total_leads_criados = len(crm.leads)
+    leads_convertidos = len([l for l in crm.leads if l.converted])
+    taxa_conversao = (leads_convertidos / total_leads_criados * 100) if total_leads_criados > 0 else 0
+    
+    return {
+        "total_leads": total_leads_criados,
+        "leads_convertidos": leads_convertidos,
+        "taxa_conversao": round(taxa_conversao, 2)
+    }
+
+@app.get("/relatorios/info", dependencies=[Depends(verificar_api_key)])
+def relatorio_info():
+    info_detalhada = {}
+    for contato in crm.contatos:
+        stage = contato.sales_stage
+        if stage not in info_detalhada:
+            info_detalhada[stage] = []
+        
+        info_detalhada[stage].append({
+            "id": contato.id,
+            "nome": contato.name,
+            "empresa": contato.empresa,
+            "email": contato.email
+        })
+    
+    return info_detalhada
