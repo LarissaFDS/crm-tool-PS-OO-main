@@ -1,0 +1,83 @@
+{
+  "contatos": [
+    {
+      "id": 1618033988,
+      "name": "Ana Silva",
+      "email": "ana.silva@example.com",
+      "telefone": "11-98765-4321",
+      "empresa": "Tech Solutions",
+      "notas": "Cliente potencial interessada no produto X.",
+      "sales_stage": "Prospecto",
+      "stage_history": [
+        "Lead",
+        "Prospecto"
+      ],
+      "created_at": "18/09/2025",
+      "activities": [],
+      "tasks": [],
+      "documents": []
+    },
+    {
+      "id": 1618034052,
+      "name": "Bruno Costa",
+      "email": "bruno.costa@example.com",
+      "telefone": "21-91234-5678",
+      "empresa": "Inova Web",
+      "notas": "Fechou negócio. Aguardando assinatura do contrato.",
+      "sales_stage": "Venda fechada",
+      "stage_history": [],
+      "created_at": "17/09/2025",
+      "activities": [],
+      "tasks": [],
+      "documents": []
+    }
+  ],
+  "campanhas": [
+    {
+      "id": 1718034100,
+      "title": "Lançamento Produto W",
+      "description": "Campanha de email para anunciar o lançamento do novo Produto W.",
+      "target_stage": "Prospecto",
+      "sent_to": [],
+      "created_at": "20/09/2025"
+    },
+    {
+      "id": 1718034115,
+      "title": "Webinar de Boas-vindas",
+      "description": "Convite para o webinar de novos clientes.",
+      "target_stage": "Venda fechada",
+      "sent_to": [],
+      "created_at": "19/09/2025"
+    }
+  ],
+  "leads": [
+    {
+      "id": 1818034130,
+      "name": "Carla Dias",
+      "email": "carla.d@emailprovider.com",
+      "source": "Website",
+      "created_at": "20/09/2025",
+      "score": 15,
+      "converted": false
+    },
+    {
+      "id": 1818034145,
+      "name": "Daniel Farias",
+      "email": "daniel.f@emailprovider.com",
+      "source": "Indicação",
+      "created_at": "20/09/2025",
+      "score": 25,
+      "converted": false
+    },
+    {
+      "id": 1818034160,
+      "name": "Elena Marques",
+      "email": "elena.m@emailprovider.com",
+      "source": "Evento",
+      "created_at": "20/09/2025",
+      "score": 10,
+      "converted": false
+    }
+  ],
+  "documents": []
+}

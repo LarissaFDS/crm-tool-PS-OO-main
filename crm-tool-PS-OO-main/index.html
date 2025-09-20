@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - CRM</title>
+    <style>
+        body{font-family: sans-serif; background-color: #f4f4f9; color: #333; padding: 20px;}
+        h1, h2{color: #5a5a5a;}
+        nav{margin-bottom: 20px;}
+        nav button{font-size: 16px; padding: 10px 15px; margin-right: 10px; cursor: pointer; border: 1px solid #ddd; background-color: #e9ecef; border-radius: 4px;}
+        nav button.active{background-color: #007bff; color: white; border-color: #007bff;}
+        table{width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
+        th, td{padding: 12px; border: 1px solid #ddd; text-align: left;}
+        th{background-color: #007bff; color: white;}
+        tr:nth-child(even){background-color: #f2f2f2;}
+        .actions button{padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;}
+        .delete-btn{background-color: #dc3545; color: white;}
+        .edit-btn{background-color: #ffc107; color: black;}
+        .view-section{display: none;}
+        .view-section.active{display: block;}
+
+        .modal{display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);}
+        .modal-content{background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px;}
+        .close-btn{color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;}
+        form label{display: block; margin-top: 10px;}
+        form input, form textarea{width: 95%; padding: 8px; margin-top: 5px;}
+        form button{margin-top: 20px;}
+    </style>
+</head>
+<body>
+
+    <h1>Painel do CRM</h1>
+
+    <nav>
+        <button id="nav-contacts" class="active">Contatos</button>
+        <button id="nav-leads">Leads</button>
+        <button id="nav-campaigns">Campanhas</button>
+    </nav>
+
+    <div id="contacts-view" class="view-section active">
+        <h2>Contatos</h2>
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Nome</th><th>Email</th><th>Telefone</th><th>Estágio</th><th>Ações</th></tr>
+            </thead>
+            <tbody id="contactsTableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="leads-view" class="view-section">
+        <h2>Leads</h2>
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Nome</th><th>Email</th><th>Fonte</th><th>Ações</th></tr>
+            </thead>
+            <tbody id="leadsTableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="campaigns-view" class="view-section">
+        <h2>Campanhas</h2>
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Título</th><th>Estágio Alvo</th><th>Criada em</th><th>Ações</th></tr>
+            </thead>
+            <tbody id="campaignsTableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Editar Contato</h2>
+            <form id="editForm">
+                <input type="hidden" id="editContactId">
+                <label for="editName">Nome:</label>
+                <input type="text" id="editName" required>
+                <label for="editEmail">Email:</label>
+                <input type="email" id="editEmail" required>
+                <label for="editTelefone">Telefone:</label>
+                <input type="text" id="editTelefone">
+                <label for="editEmpresa">Empresa:</label>
+                <input type="text" id="editEmpresa">
+                <label for="editNotas">Notas:</label>
+                <textarea id="editNotas"></textarea>
+                <button type="submit">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="editLeadModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Editar Lead</h2>
+            <form id="editLeadForm">
+                <input type="hidden" id="editLeadId">
+                <label for="editLeadName">Nome:</label>
+                <input type="text" id="editLeadName" required>
+                <label for="editLeadEmail">Email:</label>
+                <input type="email" id="editLeadEmail" required>
+                <label for="editLeadSource">Fonte:</label>
+                <input type="text" id="editLeadSource">
+                <button type="submit">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="editCampaignModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Editar Campanha</h2>
+            <form id="editCampaignForm">
+                <input type="hidden" id="editCampaignId">
+                <label for="editCampaignTitle">Título:</label>
+                <input type="text" id="editCampaignTitle" required>
+                <label for="editCampaignDescription">Descrição:</label>
+                <textarea id="editCampaignDescription"></textarea>
+                <label for="editCampaignTargetStage">Estágio Alvo:</label>
+                <input type="text" id="editCampaignTargetStage" required>
+                <button type="submit">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = "secreto123";
+
+        // --- REFERÊNCIAS GLOBAIS ---
+        const navButtons = document.querySelectorAll('nav button');
+        const sections = document.querySelectorAll('.view-section');
+
+        // --- LÓGICA DE NAVEGAÇÃO ---
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                sections.forEach(sec => sec.classList.remove('active'));
+                button.classList.add('active');
+                const targetViewId = button.id.replace('nav-', '') + '-view';
+                document.getElementById(targetViewId).classList.add('active');
+                if (targetViewId === 'contacts-view') fetchAndDisplayContacts();
+                if (targetViewId === 'leads-view') fetchAndDisplayLeads();
+                if (targetViewId === 'campaigns-view') fetchAndDisplayCampaigns();
+            });
+        });
+
+        // --- LÓGICA DE CONTATOS ---
+        async function fetchAndDisplayContacts() {
+            const tableBody = document.getElementById('contactsTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>';
+            try {
+                const response = await fetch('/contatos', { headers: { 'x-api-key': apiKey } });
+                if (!response.ok) throw new Error('Erro ao buscar contatos.');
+                const contacts = await response.json();
+                tableBody.innerHTML = '';
+                contacts.forEach(c => {
+                    const row = document.createElement('tr');
+                    row.setAttribute('id', `contact-${c.id}`);
+                    row.innerHTML = `
+                        <td>${c.id}</td>
+                        <td>${c.name}</td>
+                        <td>${c.email}</td>
+                        <td>${c.telefone}</td>
+                        <td>${c.sales_stage}</td>
+                        <td class="actions">
+                            <button class="edit-btn" onclick="openEditModal('contact', ${c.id})">Editar</button>
+                            <button class="delete-btn" onclick="deleteItem('contact', ${c.id})">Deletar</button>
+                        </td>`;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                tableBody.innerHTML = `<tr><td colspan="6" style="color: red;">${error.message}</td></tr>`;
+            }
+        }
+
+        // --- LÓGICA DE LEADS ---
+        async function fetchAndDisplayLeads() {
+            const tableBody = document.getElementById('leadsTableBody');
+            tableBody.innerHTML = '<tr><td colspan="5">Carregando...</td></tr>';
+            try {
+                const response = await fetch('/leads', { headers: { 'x-api-key': apiKey } });
+                if (!response.ok) throw new Error('Erro ao buscar leads.');
+                const leads = await response.json();
+                tableBody.innerHTML = '';
+                leads.forEach(l => {
+                    const row = document.createElement('tr');
+                    row.setAttribute('id', `lead-${l.id}`);
+                    row.innerHTML = `
+                        <td>${l.id}</td>
+                        <td>${l.name}</td>
+                        <td>${l.email}</td>
+                        <td>${l.source}</td>
+                        <td class="actions">
+                            <button class="edit-btn" onclick="openEditModal('lead', ${l.id})">Editar</button>
+                            <button class="delete-btn" onclick="deleteItem('lead', ${l.id})">Deletar</button>
+                        </td>`;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                tableBody.innerHTML = `<tr><td colspan="5" style="color: red;">${error.message}</td></tr>`;
+            }
+        }
+
+        // --- LÓGICA DE CAMPANHAS ---
+        async function fetchAndDisplayCampaigns() {
+            const tableBody = document.getElementById('campaignsTableBody');
+            tableBody.innerHTML = '<tr><td colspan="5">Carregando...</td></tr>';
+            try {
+                const response = await fetch('/campanhas', { headers: { 'x-api-key': apiKey } });
+                if (!response.ok) throw new Error('Erro ao buscar campanhas.');
+                const campaigns = await response.json();
+                tableBody.innerHTML = '';
+                campaigns.forEach(c => {
+                    const row = document.createElement('tr');
+                    row.setAttribute('id', `campaign-${c.id}`);
+                    row.innerHTML = `
+                        <td>${c.id}</td>
+                        <td>${c.title}</td>
+                        <td>${c.target_stage}</td>
+                        <td>${c.created_at}</td>
+                        <td class="actions">
+                            <button class="edit-btn" onclick="openEditModal('campaign', ${c.id})">Editar</button>
+                            <button class="delete-btn" onclick="deleteItem('campaign', ${c.id})">Deletar</button>
+                        </td>`;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                tableBody.innerHTML = `<tr><td colspan="5" style="color: red;">${error.message}</td></tr>`;
+            }
+        }
+
+        // --- FUNÇÕES DE MODAL ---
+        function setupModal(modal, closeBtn) {
+            closeBtn.onclick = () => { modal.style.display = 'none'; };
+            window.onclick = (event) => { if (event.target == modal) { modal.style.display = 'none'; } };
+        }
+
+        const contactEditModal = document.getElementById('editModal');
+        const leadEditModal = document.getElementById('editLeadModal');
+        const campaignEditModal = document.getElementById('editCampaignModal');
+
+        setupModal(contactEditModal, contactEditModal.querySelector('.close-btn'));
+        setupModal(leadEditModal, leadEditModal.querySelector('.close-btn'));
+        setupModal(campaignEditModal, campaignEditModal.querySelector('.close-btn'));
+
+        async function openEditModal(type, id) {
+            let endpoint = '';
+            let modal = null;
+
+            // Corrige o endpoint para cada tipo
+            if (type === 'contact') {
+                endpoint = `/contatos/${id}`;
+                modal = contactEditModal;
+            } else if (type === 'lead') {
+                endpoint = `/leads/${id}`;
+                modal = leadEditModal;
+            } else if (type === 'campaign') {
+                endpoint = `/campanhas/${id}`;
+                modal = campaignEditModal;
+            }
+
+            try {
+                const response = await fetch(endpoint, { headers: { 'x-api-key': apiKey } });
+                if (!response.ok) throw new Error(`${type} não encontrado.`);
+                const data = await response.json();
+
+                if (type === 'contact') {
+                    document.getElementById('editContactId').value = data.id;
+                    document.getElementById('editName').value = data.name;
+                    document.getElementById('editEmail').value = data.email;
+                    document.getElementById('editTelefone').value = data.telefone;
+                    document.getElementById('editEmpresa').value = data.empresa || '';
+                    document.getElementById('editNotas').value = data.notas || '';
+                } else if (type === 'lead') {
+                    document.getElementById('editLeadId').value = data.id;
+                    document.getElementById('editLeadName').value = data.name;
+                    document.getElementById('editLeadEmail').value = data.email;
+                    document.getElementById('editLeadSource').value = data.source;
+                } else if (type === 'campaign') {
+                    document.getElementById('editCampaignId').value = data.id;
+                    document.getElementById('editCampaignTitle').value = data.title;
+                    document.getElementById('editCampaignDescription').value = data.description;
+                    document.getElementById('editCampaignTargetStage').value = data.target_stage;
+                }
+                modal.style.display = 'block';
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        // --- HANDLERS DE FORMULÁRIOS ---
+        document.getElementById('editForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const id = document.getElementById('editContactId').value;
+            const data = {
+                name: document.getElementById('editName').value,
+                email: document.getElementById('editEmail').value,
+                telefone: document.getElementById('editTelefone').value,
+                empresa: document.getElementById('editEmpresa').value,
+                notas: document.getElementById('editNotas').value
+            };
+
+            try {
+                const response = await fetch(`/contatos/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    contactEditModal.style.display = 'none';
+                    fetchAndDisplayContacts();
+                    alert('Contato atualizado com sucesso!');
+                } else {
+                    const errorData = await response.json();
+                    alert(`Erro ao atualizar: ${errorData.detail}`);
+                }
+            } catch (error) {
+                alert('Não foi possível conectar à API para atualizar.');
+            }
+        });
+
+        document.getElementById('editLeadForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const id = document.getElementById('editLeadId').value;
+            const data = {
+                name: document.getElementById('editLeadName').value,
+                email: document.getElementById('editLeadEmail').value,
+                source: document.getElementById('editLeadSource').value
+            };
+
+            try {
+                const response = await fetch(`/leads/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    leadEditModal.style.display = 'none';
+                    fetchAndDisplayLeads();
+                    alert('Lead atualizado com sucesso!');
+                } else {
+                    const errorData = await response.json();
+                    alert(`Erro ao atualizar: ${errorData.detail}`);
+                }
+            } catch (error) {
+                alert('Não foi possível conectar à API para atualizar.');
+            }
+        });
+
+        document.getElementById('editCampaignForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const id = document.getElementById('editCampaignId').value;
+            const data = {
+                title: document.getElementById('editCampaignTitle').value,
+                description: document.getElementById('editCampaignDescription').value,
+                target_stage: document.getElementById('editCampaignTargetStage').value
+            };
+
+            try {
+                const response = await fetch(`/campanhas/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    campaignEditModal.style.display = 'none';
+                    fetchAndDisplayCampaigns();
+                    alert('Campanha atualizada com sucesso!');
+                } else {
+                    const errorData = await response.json();
+                    alert(`Erro ao atualizar: ${errorData.detail}`);
+                }
+            } catch (error) {
+                alert('Não foi possível conectar à API para atualizar.');
+            }
+        });
+
+        async function deleteItem(type, id) {
+            if (!confirm(`Tem certeza de que deseja deletar o ${type} com ID ${id}?`)) { return; }
+            
+            let endpoint = '';
+            if (type === 'contact') {
+                endpoint = `/contatos/${id}`;
+            } else if (type === 'lead') {
+                endpoint = `/leads/${id}`;
+            } else if (type === 'campaign') {
+                endpoint = `/campanhas/${id}`;
+            }
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'DELETE',
+                    headers: { 'x-api-key': apiKey }
+                });
+                if (response.status === 204) {
+                    document.getElementById(`${type}-${id}`).remove();
+                    alert(`${type.charAt(0).toUpperCase() + type.slice(1)} deletado com sucesso!`);
+                } else {
+                    const errorData = await response.json();
+                    alert(`Erro ao deletar: ${errorData.detail}`);
+                }
+            } catch (error) {
+                alert(`Não foi possível conectar à API para deletar.`);
+            }
+        }
+
+        // --- INICIALIZAÇÃO ---
+        window.onload = fetchAndDisplayContacts;
+
+    </script>
+</body>
+</html>
