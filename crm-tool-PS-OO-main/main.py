@@ -1,11 +1,17 @@
+import os
+
 from core.crm import CRM
 from models.base import UserRole
 from app import inicio
 
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 def main():
     crm = CRM()
     while True:
-
+        clear_screen()
+        
         if crm.current_user_role is None:
             crm.change_user_role()
             continue
@@ -18,21 +24,21 @@ def main():
         
         opcao = input("Escolha uma opção: ")
 
-        # Opções comuns a todos os perfis
+        # Ve se é para sair, antes de rodar tudo 
+        is_exit_option = (
+            (opcao == "15" and crm.current_user_role == UserRole.ADM) or
+            (opcao == "9" and crm.current_user_role == UserRole.VENDEDOR) or
+            (opcao == "8" and crm.current_user_role == UserRole.MARKETING)
+        )
+        if is_exit_option:
+            crm.save_data()
+            print("Saindo... dados salvos.")
+            break
+        
+        # opção comum para trocar de perfil
         if opcao == "1":
             crm.change_user_role()
-        elif opcao == "15" and crm.current_user_role == UserRole.ADM:
-            crm.save_data()
-            print("Saindo... dados salvos.")
-            break
-        elif opcao == "9" and crm.current_user_role == UserRole.VENDEDOR:
-            crm.save_data()
-            print("Saindo... dados salvos.")
-            break
-        elif opcao == "8" and crm.current_user_role == UserRole.MARKETING:
-            crm.save_data()
-            print("Saindo... dados salvos.")
-            break
+            continue
         
         # Opções específicas por perfil
         elif crm.current_user_role == UserRole.ADM:
@@ -72,6 +78,7 @@ def main():
                 case "6": crm.send_email_campanha()
                 case "7": crm.report_summary()
                 case _: print("Opção inválida.")
+        input("\nPressione Enter para continuar...")
 
 if __name__ == "__main__":
     main()

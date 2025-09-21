@@ -12,8 +12,8 @@ class Contato(Pessoa):  # Herda de Pessoa
         self.telefone = telefone
         self.empresa = empresa
         self.notas = notas
-        self.sales_stage = "Lead"
-        self.stage_history = ["Lead"]
+        self.sales_stage = "Prospecto"
+        self.stage_history = ["Prospecto"]
         self.activities = []
         self.tasks = []
         self.documents = []  # documentos
@@ -59,7 +59,7 @@ class Lead(Pessoa):  # Herda de Pessoa
         self.source = source
         self.score = 0
         self.converted = False
-
+    
     def to_dict(self):
         return {
             "id": self.id,
