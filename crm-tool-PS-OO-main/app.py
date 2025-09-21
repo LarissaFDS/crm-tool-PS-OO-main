@@ -1,3 +1,7 @@
+import socket
+import qrcode
+import uvicorn
+import os
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.responses import FileResponse
 from starlette import status
@@ -388,3 +392,44 @@ def relatorio_info():
         })
     
     return info_detalhada
+
+
+
+def get_local_ip(): #Função para obter o endereço IP local da máquina
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1' #Retorna localhost se não encontrar IP
+    finally:
+        s.close()
+    return IP
+
+def display_qr_code(url): #Gera e exibe um QR code no terminal
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=4,
+        border=1,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+    
+    print("\n" + "="*50)
+    print("Para acessar pelo celular, escaneie o QR Code abaixo")
+    print("ou acesse a URL:")
+    print(f"URL: {url}")
+    print("="*50 + "\n")
+    qr.print_tty()
+
+def inicio():
+    host_ip = get_local_ip()
+    port = 8000
+
+    access_url = f"http://{host_ip}:{port}"
+    
+    if os.environ.get("UVICORN_RELOAD") != "true":
+        display_qr_code(access_url)
+
+    uvicorn.run("app:app", host=host_ip, port=port, reload=True)

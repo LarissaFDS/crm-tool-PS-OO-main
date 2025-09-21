@@ -311,7 +311,8 @@ class CRM:
                 "11. Adicionar documento",
                 "12. Listar documentos",
                 "13. Relatórios e Analytics",
-                "14. Sair"
+                "14. Iniciar servidor online",
+                "15. Sair"
             ]
         elif self.current_user_role == UserRole.VENDEDOR:
             return base_menu + [
@@ -334,4 +335,3 @@ class CRM:
                 "7. Relatórios de campanhas",
                 "8. Sair"
             ]
-

@@ -1,2 +1,3 @@
 fastapi[all]
 aiofiles
+qrcode[pil]

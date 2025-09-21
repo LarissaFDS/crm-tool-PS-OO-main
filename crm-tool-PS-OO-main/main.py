@@ -1,5 +1,6 @@
 from core.crm import CRM
 from models.base import UserRole
+from app import inicio
 
 def main():
     crm = CRM()
@@ -20,7 +21,7 @@ def main():
         # Opções comuns a todos os perfis
         if opcao == "1":
             crm.change_user_role()
-        elif opcao == "14" and crm.current_user_role == UserRole.ADM:
+        elif opcao == "15" and crm.current_user_role == UserRole.ADM:
             crm.save_data()
             print("Saindo... dados salvos.")
             break
@@ -48,6 +49,7 @@ def main():
                 case "11": crm.add_document()
                 case "12": crm.list_documentos()
                 case "13": crm.report_summary()
+                case "14": inicio()
                 case _: print("Opção inválida.")
         
         elif crm.current_user_role == UserRole.VENDEDOR:
