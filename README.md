@@ -20,9 +20,17 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
 - **🎨 Painéis Personalizáveis**: Menus customizáveis por perfil de usuário
 - **📁 Gerenciamento de Documentos**: Armazenamento de arquivos relacionados a vendas
 
-### ✅ Implementadas
+### ⚠️ Implementação Parcial**
+**Mobile Access**
+**Funcionalidades Implementadas:**
+- **Acesso via QR Code**: O sistema gera automaticamente um QR code para acesso móvel
+- **Interface Web Responsiva**: O dashboard HTML é acessível via navegador móvel
+- **API REST Completa**: Todos os endpoints podem ser consumidos por apps móveis
 
-- **📱 Acesso Mobile**: Funcionalidade para dispositivos móveis
+**Funcionalidades Não Implementadas:**
+- **App Nativo**: Não há aplicativo iOS/Android dedicado
+- **Push Notifications**: Notificações push não implementadas
+- **Sincronização Offline**: Requer conexão com internet
 
 
 ## 🛠️ Instalação e Execução
