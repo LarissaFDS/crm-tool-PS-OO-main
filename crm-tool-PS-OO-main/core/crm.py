@@ -11,15 +11,25 @@ from models.task import Task
 DATA_FILE = Path(__file__).resolve().parent.parent / "crm_data.json"
 
 class CRM:
+    #------------------- SINGLETON --------------------------
+    _instace = None
+    _initialized = False
+    def __new__ (cls, *args, **kwargs):
+        if cls._instace is None:
+            cls._instace = super(CRM, cls).__new__(cls)
+        return cls._instace
+    
     def __init__(self):
-       # print("\n--- DEBUG: 1. Iniciando a criação do objeto CRM... ---")
-        
-        self.contatos = []
-        self.campanhas = []
-        self.leads = []
-        self.documents = []
-        self.current_user_role = None  # user inicial
-        self.load_data()
+        if not CRM._initialized:
+            CRM._initialized = True
+    #--------------------------------------------------------
+        # print("\n--- DEBUG: 1. Iniciando a criação do objeto CRM... ---")
+            self.contatos = []
+            self.campanhas = []
+            self.leads = []
+            self.documents = []
+            self.current_user_role = None  # user inicial
+            self.load_data()
 
        # print("--- DEBUG: 4. Finalizando a criação do objeto CRM. ---\n")
         
