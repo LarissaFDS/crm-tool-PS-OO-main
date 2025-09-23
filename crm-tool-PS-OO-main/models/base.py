@@ -8,6 +8,21 @@ class UserRole(Enum):
     VENDEDOR = "vendedor"
     MARKETING = "marketing"
     CLIENTE = "cliente"
+    
+class SalesStage(Enum):
+    LEAD = "Lead"
+    PROSPECTO = "Prospecto"
+    QUALIFICADO = "Qualificado"
+    PROPOSTA = "Proposta"
+    NEGOCIACAO = "Negociação"
+    VENDA_FECHADA = "Venda fechada"
+    
+class LeadSource(Enum):
+    WEBSITE = "Website"
+    REDES_SOCIAIS = "Redes Sociais"
+    INDICACAO = "Indicação"
+    EVENTO = "Evento"
+    OUTRO = "Outro"
 
 # Classe abstrata base para entidades que podem ser persistidas
 class Serializavel(ABC):

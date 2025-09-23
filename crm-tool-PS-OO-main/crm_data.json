@@ -77,6 +77,42 @@
       "created_at": "20/09/2025",
       "score": 10,
       "converted": false
+    },
+    {
+      "id": 1758658599897,
+      "name": "Larissa Ferreira",
+      "email": "larissa@email.com",
+      "source": "Outro",
+      "created_at": "23/09/2025",
+      "score": 0,
+      "converted": false
+    },
+    {
+      "id": 1758658651552,
+      "name": "Otávio Joshua",
+      "email": "joshua@email.com",
+      "source": "Indicação",
+      "created_at": "23/09/2025",
+      "score": 50,
+      "converted": false
+    },
+    {
+      "id": 1758659341831,
+      "name": "Zilderlan",
+      "email": "zil@email.com",
+      "source": "Indicação",
+      "created_at": "23/09/2025",
+      "score": 50,
+      "converted": false
+    },
+    {
+      "id": 1758660234472,
+      "name": "Gabriel Ferreira",
+      "email": "gabriel@email.com",
+      "source": "Indicação",
+      "created_at": "23/09/2025",
+      "score": 50,
+      "converted": false
     }
   ]
 }

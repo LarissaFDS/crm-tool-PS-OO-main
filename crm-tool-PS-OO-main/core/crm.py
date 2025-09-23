@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
+import unicodedata
 
-from models.base import UserRole
-from models.contact import Contato, Lead
+from models.base import UserRole, LeadSource
+from models.contact import Contato, Lead, SalesStage
 from models.campanha import EmailCampanha
 from models.document import Document
 from models.atividade import Atividade
@@ -155,15 +156,28 @@ class CRM:
         print("\n=== Novo Lead ===")
         name = self._get_normalized_input("Nome: ", case="title")
         email = self._get_normalized_input("Email: ", case="lower")
-        print("Fontes: Website, Redes Sociais, Indicação, Evento, Outro")
-        source = self._get_normalized_input("Fonte: ", case="title")
-        if not source:
-            source = "Website"
+        fontes_disponiveis = [source.value for source in LeadSource]
+        fontes_disponiveis_normalizadas = [self._normalize_text(source, case="title") for source in fontes_disponiveis]
+        print(f"Fontes disponíves: {', '.join(fontes_disponiveis)}")
+        source = None
+        
+        while True:
+            source_input = self._get_normalized_input("Fonte: ", case="title")
+            if not source_input:
+                source = LeadSource.WEBSITE.value
+                break
+            if source_input in fontes_disponiveis_normalizadas:
+                idx = fontes_disponiveis_normalizadas.index(source_input)
+                source = fontes_disponiveis[idx]
+                break
+            else:
+                print(f"Erro: Fonte inválida :(. Escolha uma fonte válida.)")
+                
         try:
             lead = Lead(name, email, source)
             self.leads.append(lead)
             self.save_data()
-            print("Lead adicionado com sucesso!")
+            print(f"Lead adicionado com sucesso! Pontuação inicial: {lead.score}")
         except ValueError as e:
             print(f"Erro: {e}")
 
@@ -241,11 +255,13 @@ class CRM:
             idx_input = self._get_normalized_input("Escolha o contato (número): ")
             idx = int(idx_input) - 1
             if 0 <= idx < len(self.contatos):
-                print("Estágios: Prospecto, Proposta, Negociação, Venda fechada")
+                print(f"Estágios: {[stage.value for stage in SalesStage]}")
                 novo = self._get_normalized_input("Novo estágio: ", case="title")
-                novo_normalizado = self._normalize_text(novo, case="title")
-                self.contatos[idx].sales_stage = novo_normalizado
-                self.contatos[idx].stage_history.append(novo_normalizado)
+                if novo not in [stage.value for stage in SalesStage]:
+                    print ("Erro: Estágio inválido :(\n)")
+                    return
+                self.contatos[idx].sales_stage = novo
+                self.contatos[idx].stage_history.append(novo)
                 self.save_data()
                 print("Estágio de venda atualizado!")
             else:
@@ -258,8 +274,7 @@ class CRM:
         title = self._get_normalized_input("Título da campanha: ", case="title")
         description = self._get_normalized_input("Descrição: ")
         target_stage = self._get_normalized_input("Estágio alvo (Lead/Prospecto/Proposta/Negociação/Venda fechada/Todos): ", case="title")
-        target_stage_normalizado = self._normalize_text(target_stage, case="title")
-        camp = EmailCampanha(title, description, target_stage_normalizado)
+        camp = EmailCampanha(title, description, target_stage)
         self.campanhas.append(camp)
         self.save_data()
         print("Campanha criada com sucesso!")
@@ -401,8 +416,12 @@ class CRM:
     def _normalize_text(self, text, case="none"):
         if not text:
             return ""
-        
-        value = text.strip() 
+    
+        normalized_text = unicodedata.normalize('NFD', text)\
+                                    .encode('ascii', 'ignore')\
+                                    .decode('utf-8')
+
+        value = normalized_text.strip()
         if case == "lower":
             return value.lower()
         elif case == "title":
@@ -410,3 +429,7 @@ class CRM:
         elif case == "upper":
             return value.upper()
         return value
+    
+    def _get_normalized_input(self, prompt, case="none"):
+        value = input(prompt)
+        return self._normalize_text(value, case=case)

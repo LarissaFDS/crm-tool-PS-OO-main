@@ -1,6 +1,6 @@
 from datetime import datetime
 import time
-from .base import Pessoa
+from .base import Pessoa, SalesStage
 from .atividade import Atividade
 from .task import Task
 from .document import Document
@@ -12,8 +12,8 @@ class Contato(Pessoa):  # Herda de Pessoa
         self.telefone = telefone
         self.empresa = empresa
         self.notas = notas
-        self.sales_stage = "Prospecto"
-        self.stage_history = ["Prospecto"]
+        self.sales_stage = SalesStage.PROSPECTO.value
+        self.stage_history = [SalesStage.PROSPECTO.value]
         self.activities = []
         self.tasks = []
         self.documents = []  # documentos
@@ -59,6 +59,17 @@ class Lead(Pessoa):  # Herda de Pessoa
         self.source = source
         self.score = 0
         self.converted = False
+        self._calculate_initial_score() #aqui pra chamar logo no inicio
+        
+    def _calculate_initial_score(self):
+        score_map = {
+            "Indicação": 50,  
+            "Evento": 30,
+            "Website": 10,
+            "Redes Sociais": 5, 
+            "Outro": 0
+        }
+        self.score = score_map.get(self.source.title(), 0)
     
     def to_dict(self):
         return {
