@@ -34,6 +34,8 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
 ### 🆙 Melhorias
 - Normalizei os inputs e como os dados são tratados.
 - Na mudança de Lead para Contato, agora a base é Prospecto e não Lead.
+- Adicionei score para os Lead
+- Melhorei a organização das definições dos Lead e Contato
 
 ## 🛠️ Instalação e Execução
 
