@@ -81,11 +81,15 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
 ### 2. Factory Method 
 - O que é e por quê?
 
-   O padrão Factory encapsula a lógica de criação de objetos. Em vez de chamar o construtor de uma classe diretamente (ex: Atividade("email", ...)), pede a uma "fábrica" para criar o objeto. Isso é útil porque centraliza a lógica de criação. No caso, o programa cria diferentes tipos de Atividade ("chamada", "email", "reunião"). Uma AtividadeFactory poderia simplificar isso e até permitir a implementação de subclasses de Atividade no futuro sem alterar o código que solicita a criação.
+   O padrão Factory é um padrão de criação que fornece uma interface para criar objetos em uma superclasse, mas permite que as subclasses alterem o tipo de objetos que serão criados. No nosso projeto, ele é usado para centralizar e simplificar a criação dos diferentes tipos de "Pessoas" (Contato e Lead).
 
-- Onde coloquei (ainda nao implementei)
+   O motivo principal para usá-lo é o desacoplamento. A classe CRM não precisa saber os detalhes de como um Contato ou um Lead é instanciado e validado. Ela simplesmente pede ao PessoaFactoryManager para criar uma pessoa de um determinado tipo (ex: 'contato'), passando os dados necessários. Toda a lógica de criação, incluindo validações específicas, fica isolada dentro da sua respectiva classe Factory, tornando o código mais limpo, organizado e muito mais fácil de estender no futuro, para funcionários, por exemplo.
 
-   Criei uma classe AtividadeFactory dentro do arquivo models/atividade.py. Em vez de chamar Atividade(tipo, desc), chamo AtividadeFactory.criar(tipo, desc).
+- Onde coloquei
+
+   models/factory.py: Aqui está o coração do padrão. O arquivo contém a classe abstrata PessoaFactory, as implementações concretas ContatoFactory e LeadFactory, e o gerenciador PessoaFactoryManager que seleciona qual fábrica usar.
+
+   core/crm.py: Esta é a classe "cliente" que utiliza o padrão. Métodos como add_contato, add_lead, e converter_lead chamam o PessoaFactoryManager.create_person para obter os objetos já prontos e validados, sem precisar se preocupar com a lógica de criação deles.
 
 ### 3. Builder
 - O que é e por quê?

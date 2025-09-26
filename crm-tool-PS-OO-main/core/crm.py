@@ -8,17 +8,18 @@ from models.campanha import EmailCampanha
 from models.document import Document
 from models.atividade import Atividade
 from models.task import Task
+from models.factory import PessoaFactoryManager
 
 DATA_FILE = Path(__file__).resolve().parent.parent / "crm_data.json"
 
 class CRM:
     #------------------- SINGLETON --------------------------
-    _instace = None
+    _instance = None
     _initialized = False
     def __new__ (cls, *args, **kwargs):
-        if cls._instace is None:
-            cls._instace = super(CRM, cls).__new__(cls)
-        return cls._instace
+        if cls._instance is None:
+            cls._instance = super(CRM, cls).__new__(cls)
+        return cls._instance
     
     def __init__(self):
         if not CRM._initialized:
@@ -80,11 +81,19 @@ class CRM:
         empresa = self._get_normalized_input("Empresa (opcional): ", case="title")
         notes = self._get_normalized_input("Notas (opcional): ")
         
-        try:
-            c = Contato(name, email, telefone, empresa, notes)
-            self.contatos.append(c)
+        try: #usando aqui o FACTORY
+            new_contact = PessoaFactoryManager.create_person(
+                'contato',
+                name=name,
+                email=email,
+                telefone=telefone,
+                empresa=empresa,
+                notas=notes
+            )
+            self.contatos.append(new_contact)
             self.save_data()
             print("Contato adicionado com sucesso!")
+            
         except ValueError as e:
             print(f"Erro: {e}")
 
@@ -174,10 +183,16 @@ class CRM:
                 print(f"Erro: Fonte inválida :(. Escolha uma fonte válida.)")
                 
         try:
-            lead = Lead(name, email, source)
-            self.leads.append(lead)
+            new_lead = PessoaFactoryManager.create_person(
+                'lead',
+                name=name,
+                email=email,
+                source=source
+            )
+            self.leads.append(new_lead)
+            
             self.save_data()
-            print(f"Lead adicionado com sucesso! Pontuação inicial: {lead.score}")
+            print(f"Lead adicionado com sucesso! Pontuação inicial: {new_lead.score}")
         except ValueError as e:
             print(f"Erro: {e}")
 
@@ -198,7 +213,15 @@ class CRM:
                 telefone = self._get_normalized_input("Telefone: ")
                 empresa = self._get_normalized_input("Empresa (opcional): ", case="title")
                 notes = f"Convertido de lead (Fonte: {lead.source})"
-                contato = Contato(lead.name, lead.email, telefone, empresa, notes)
+                
+                contato = PessoaFactoryManager.create_person(
+                    'contato',
+                    name=lead.name,
+                    email=lead.email,
+                    telefone=telefone,
+                    empresa=empresa,
+                    notas=notes
+                )
                 self.contatos.append(contato)
                 lead.converted = True
                 self.save_data()
@@ -402,16 +425,6 @@ class CRM:
                 "7. Relatórios de campanhas",
                 "8. Sair"
             ]
-            
-    def _get_normalized_input(self, prompt, case="none"):
-        value = input(prompt).strip() 
-        if case == "lower":
-            return value.lower()
-        elif case == "title":
-            return value.title()
-        elif case == "upper":
-            return value.upper()
-        return value
     
     def _normalize_text(self, text, case="none"):
         if not text:
