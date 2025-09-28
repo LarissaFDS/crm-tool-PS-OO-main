@@ -18,7 +18,7 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
 | **Dashboard Web Interativo**|       ❌       |         ✅         | Interface gráfica para visualizar e interagir com os dados em tempo real.  |
 | **Relatórios e Análises**|       ✅       |         ✅         | Exibe métricas de conversão e distribuição no funil de vendas.         |
 | **Acesso Móvel via QR Code**|       ✅       |         ✅         | Gera um QR Code no terminal para fácil acesso ao dashboard web pelo celular. |
-| **Segurança por API Key**|       N/A      |         ✅         | Protege os endpoints da API com chave de acesso (fins demonstrativos).              |
+
 
 ### 🆙 Melhorias Implementadas
 - **Normalização de dados**: Inputs são normalizados e tratados consistentemente.
