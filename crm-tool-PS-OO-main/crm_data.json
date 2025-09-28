@@ -46,6 +46,60 @@
       "activities": [],
       "tasks": [],
       "documents": []
+    },
+    {
+      "id": 1759088549977,
+      "name": "Yasmin Oliveira",
+      "email": "oliveira@email.com",
+      "telefone": "73 999992222",
+      "empresa": "",
+      "notas": "",
+      "sales_stage": "Prospecto",
+      "stage_history": [
+        "Prospecto"
+      ],
+      "created_at": "28/09/2025",
+      "activities": [],
+      "tasks": [],
+      "documents": []
+    },
+    {
+      "id": 1759088632051,
+      "name": "Vitoria Lima",
+      "email": "lima@email.com",
+      "telefone": "82 991194444",
+      "empresa": "",
+      "notas": "",
+      "sales_stage": "Qualificado",
+      "stage_history": [
+        "Qualificado"
+      ],
+      "created_at": "28/09/2025",
+      "activities": [
+        {
+          "type": "chamada",
+          "description": "chamada",
+          "date": "28/09/2025 16:43"
+        },
+        {
+          "type": "chamada",
+          "description": "chamada",
+          "date": "28/09/2025 16:45"
+        },
+        {
+          "type": "tarefa_concluida",
+          "description": "Tarefa concluída: tarefa",
+          "date": "28/09/2025 16:59"
+        }
+      ],
+      "tasks": [
+        {
+          "title": "tarefa",
+          "date": "28/09/2025",
+          "completed": true
+        }
+      ],
+      "documents": []
     }
   ],
   "campanhas": [
@@ -64,6 +118,24 @@
       "target_stage": "Venda fechada",
       "sent_to": [],
       "created_at": "19/09/2025"
+    },
+    {
+      "id": 1759091316417,
+      "title": "Teste",
+      "description": "seraa",
+      "target_stage": "Todos",
+      "sent_to": [],
+      "created_at": "28/09/2025"
+    },
+    {
+      "id": 1759091491523,
+      "title": "Teste2",
+      "description": "sraaa",
+      "target_stage": "Negociacao",
+      "sent_to": [
+        10
+      ],
+      "created_at": "28/09/2025"
     }
   ],
   "leads": [

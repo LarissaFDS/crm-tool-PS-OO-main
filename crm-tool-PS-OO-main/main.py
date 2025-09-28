@@ -26,8 +26,8 @@ def main():
 
         # Ve se é para sair, antes de rodar tudo 
         is_exit_option = (
-            (opcao == "15" and crm.current_user_role == UserRole.ADM) or
-            (opcao == "9" and crm.current_user_role == UserRole.VENDEDOR) or
+            (opcao == "16" and crm.current_user_role == UserRole.ADM) or
+            (opcao == "10" and crm.current_user_role == UserRole.VENDEDOR) or
             (opcao == "8" and crm.current_user_role == UserRole.MARKETING)
         )
         if is_exit_option:
@@ -49,13 +49,14 @@ def main():
                 case "5": crm.converter_lead()
                 case "6": crm.add_atividade()
                 case "7": crm.add_task()
-                case "8": crm.update_sales_stage()
-                case "9": crm.add_email_campanha()
-                case "10": crm.send_email_campanha()
-                case "11": crm.add_document()
-                case "12": crm.list_documentos()
-                case "13": crm.report_summary()
-                case "14": inicio()
+                case "8": crm.completar_task()
+                case "9": crm.update_sales_stage()
+                case "10": crm.add_email_campanha()
+                case "11": crm.send_email_campanha()
+                case "12": crm.add_document()
+                case "13": crm.list_documentos()
+                case "14": crm.report_summary()
+                case "15": inicio()
                 case _: print("Opção inválida.")
         
         elif crm.current_user_role == UserRole.VENDEDOR:
@@ -64,9 +65,10 @@ def main():
                 case "3": crm.listar_contatos()
                 case "4": crm.add_atividade()
                 case "5": crm.add_task()
-                case "6": crm.update_sales_stage()
-                case "7": crm.add_document()
-                case "8": crm.report_summary()
+                case "6": crm.completar_task()
+                case "7": crm.update_sales_stage()
+                case "8": crm.add_document()
+                case "9": crm.report_summary()
                 case _: print("Opção inválida.")
         
         elif crm.current_user_role == UserRole.MARKETING:
