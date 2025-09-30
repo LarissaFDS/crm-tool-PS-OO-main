@@ -15,7 +15,6 @@ from models.builder import create_contact, create_lead, create_campaign, get_dir
 DATA_FILE = Path(__file__).resolve().parent.parent / "crm_data.json"
 
 class CRM:
-    #------------------- SINGLETON --------------------------
     _instance = None
     _initialized = False
     def __new__ (cls, *args, **kwargs):
@@ -26,7 +25,6 @@ class CRM:
     def __init__(self):
         if not CRM._initialized:
             CRM._initialized = True
-    #--------------------------------------------------------
         #print("\n--- DEBUG: 1. Iniciando a criação do objeto CRM... ---")
             self.contatos = []
             self.campanhas = []
