@@ -116,6 +116,7 @@ crm-tool-PS-OO/
 ## 💻 Como Usar
 
 ### 1. **Primeiro Acesso**
+- Mude para o seu caminho do index no app.py na linha 102
 - Execute `python main.py`
 - Escolha seu perfil de usuário (Admin/Vendedor/Marketing)
 - O sistema guiará você pelas opções disponíveis

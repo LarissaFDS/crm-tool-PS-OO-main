@@ -99,7 +99,7 @@ crm = CRM()
 #---------------- Rota principal -------------------
 @app.get("/", response_class=FileResponse)
 def pegar_html_interface(): #rota para o front-end em HTML
-    return "index.html"
+    return "C:\\Users\\laris\\Desktop\\Faculdade\\4° periodo\Projeto de software\\crm-tool-PS-OO-main\\crm-tool-PS-OO-main\\index.html"
 
 #-------------------------- Rotas para Contato ------------------------
 @app.get("/contatos", response_model=List[ContatoResponse], dependencies=[Depends(verificar_api_key)])
