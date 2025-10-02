@@ -2,85 +2,87 @@ import os
 
 from core.crm import CRM
 from models.base import UserRole
-from app import inicio
+from core.commands import *
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
+    
+class MenuInvoker:
+    def __init__(self):
+        self._commands = {}
+        
+    def register_command(self, key, command):
+        self._commands[key] = command
+        
+    def execute_command(self, key):
+        command = self._commands.get(key)
+        if command:
+            command.execute()
+        else:
+            print("Opção inválida :(")
 
 def main():
     crm = CRM()
-    while True:
+    invoker = MenuInvoker()
+    exit_command = ExitCommand(crm)
+
+    while not exit_command.should_exit:
         clear_screen()
         
         if crm.current_user_role is None:
             crm.change_user_role()
             continue
-
-        menu_options = crm.get_menu_by_role()
         
+        invoker = MenuInvoker() #a cada interação reinicia e registra os comandos para o perfil atual
+        invoker.register_command("1", ChangeUserRoleCommand(crm))
+        
+        if crm.current_user_role == UserRole.ADM:
+            invoker.register_command("2", AddContactCommand(crm))
+            invoker.register_command("3", ListContactsCommand(crm))
+            invoker.register_command("4", AddLeadCommand(crm))
+            invoker.register_command("5", ConvertLeadCommand(crm))
+            invoker.register_command("6", AddActivityCommand(crm))
+            invoker.register_command("7", AddTaskCommand(crm))
+            invoker.register_command("8", CompleteTaskCommand(crm))
+            invoker.register_command("9", UpdateSalesStageCommand(crm))
+            invoker.register_command("10", AddEmailCampaignCommand(crm))
+            invoker.register_command("11", SendEmailCampaignCommand(crm))
+            invoker.register_command("12", AddDocumentCommand(crm))
+            invoker.register_command("13", ListDocumentsCommand(crm))
+            invoker.register_command("14", ReportSummaryCommand(crm))
+            invoker.register_command("15", StartServerCommand(crm))
+            invoker.register_command("16", exit_command)
+        
+        elif crm.current_user_role == UserRole.VENDEDOR:
+            invoker.register_command("2", AddContactCommand(crm))
+            invoker.register_command("3", ListContactsCommand(crm))
+            invoker.register_command("4", AddActivityCommand(crm))
+            invoker.register_command("5", AddTaskCommand(crm))
+            invoker.register_command("6", CompleteTaskCommand(crm))
+            invoker.register_command("7", UpdateSalesStageCommand(crm))
+            invoker.register_command("8", AddDocumentCommand(crm))
+            invoker.register_command("9", ReportSummaryCommand(crm))
+            invoker.register_command("10", exit_command)
+        
+        elif crm.current_user_role == UserRole.MARKETING:
+            invoker.register_command("2", AddLeadCommand(crm))
+            invoker.register_command("3", ConvertLeadCommand(crm))
+            invoker.register_command("4", ListContactsCommand(crm))
+            invoker.register_command("5", AddEmailCampaignCommand(crm))
+            invoker.register_command("6", SendEmailCampaignCommand(crm))
+            invoker.register_command("7", ReportSummaryCommand(crm))
+            invoker.register_command("8", exit_command)
+            
+        menu_options = crm.get_menu_by_role()
         print(f"\n--- CRM - {crm.current_user_role.value.upper()} ---")
         for option in menu_options:
             print(option)
-        
+            
         opcao = input("Escolha uma opção: ")
-
-        # Ve se é para sair, antes de rodar tudo 
-        is_exit_option = (
-            (opcao == "16" and crm.current_user_role == UserRole.ADM) or
-            (opcao == "10" and crm.current_user_role == UserRole.VENDEDOR) or
-            (opcao == "8" and crm.current_user_role == UserRole.MARKETING)
-        )
-        if is_exit_option:
-            crm.save_data()
-            print("Saindo... dados salvos.")
-            break
+        invoker.execute_command(opcao)
         
-        # opção comum para trocar de perfil
-        if opcao == "1":
-            crm.change_user_role()
-            continue
-        
-        # Opções específicas por perfil
-        elif crm.current_user_role == UserRole.ADM:
-            match opcao:
-                case "2": crm.add_contato()
-                case "3": crm.listar_contatos()
-                case "4": crm.add_lead()
-                case "5": crm.converter_lead()
-                case "6": crm.add_atividade()
-                case "7": crm.add_task()
-                case "8": crm.completar_task()
-                case "9": crm.update_sales_stage()
-                case "10": crm.add_email_campanha()
-                case "11": crm.send_email_campanha()
-                case "12": crm.add_document()
-                case "13": crm.list_documentos()
-                case "14": crm.report_summary()
-                case "15": inicio()
-                case _: print("Opção inválida.")
-        
-        elif crm.current_user_role == UserRole.VENDEDOR:
-            match opcao:
-                case "2": crm.add_contato()
-                case "3": crm.listar_contatos()
-                case "4": crm.add_atividade()
-                case "5": crm.add_task()
-                case "6": crm.completar_task()
-                case "7": crm.update_sales_stage()
-                case "8": crm.add_document()
-                case "9": crm.report_summary()
-                case _: print("Opção inválida.")
-        
-        elif crm.current_user_role == UserRole.MARKETING:
-            match opcao:
-                case "2": crm.add_lead()
-                case "3": crm.converter_lead()
-                case "4": crm.listar_contatos()
-                case "5": crm.add_email_campanha()
-                case "6": crm.send_email_campanha()
-                case "7": crm.report_summary()
-                case _: print("Opção inválida.")
-        input("\nPressione Enter para continuar...")
-
+        if not exit_command.should_exit:
+            input("\nPressione Enter para continuar...")
+            
 if __name__ == "__main__":
     main()

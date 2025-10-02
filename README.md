@@ -71,7 +71,7 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
 - **Por que usar**: Evita inconsistências nos dados e centraliza o controle do sistema.
 - **Localização**: `core/crm.py` na classe CRM.
 
-#### 2. **Factory Method** 
+#### 2. **Abstract Factory** 
 - **Propósito**: Centraliza e simplifica a criação de diferentes tipos de "Pessoas".
 - **Por que usar**: Desacopla a lógica de criação, facilita validações e extensibilidade.
 - **Localização**: 
@@ -86,6 +86,26 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
   - `core/crm.py`: Método `add_contato`.
   - `core/crm.py`: Método `add_email_campanha`.
 
+
+### Behavioral Patterns
+
+#### 1. **Command**
+- **Propósito**: Transforma uma solicitação em objeto autonomo.
+- **Por que usar**: Facilita a manutenção do menu.
+- **Localização**: 
+   - `core/commands.py`: Implementação dos commands.
+   - `main.py`: Utilizado para melhoria no menu.
+
+#### 2. **Strategy** 
+- **Propósito**: Varia independentemente do que é utilizado.
+- **Por que usar**: 
+- **Localização**: 
+
+
+#### 3. **Observer**
+- **Propósito**: Define a dependência de um para muitos. (atualiza tudo)
+- **Por que usar**: 
+- **Localização**: 
 
 ## 🏗️ Estrutura do Projeto
 
