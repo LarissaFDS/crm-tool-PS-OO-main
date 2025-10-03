@@ -12,6 +12,8 @@ from models.task import Task
 from models.factory import PessoaFactoryManager
 from models.builder import create_contact, create_lead, create_campaign, get_director
 
+from .strategy import *
+
 DATA_FILE = Path(__file__).resolve().parent.parent / "crm_data.json"
 
 class CRM:
@@ -31,6 +33,14 @@ class CRM:
             self.leads = []
             self.documents = []
             self.current_user_role = None  #user inicial
+            
+            self._menu_strategies = {
+                UserRole.ADM: AdminMenuStrategy(),
+                UserRole.CLIENTE: ClienteMenuStrategy(),
+                UserRole.MARKETING: MarketingMenuStrategy(),
+                UserRole.VENDEDOR: VendedorMenuStrategy()
+            }
+            
             self.load_data()
 
        #print("--- DEBUG: 4. Finalizando a criação do objeto CRM. ---\n")
@@ -493,55 +503,9 @@ class CRM:
                 print(f"{estagio}: {qtd} contato(s)")
 
     def get_menu_by_role(self):
-        """Retorna opções de menu baseadas no perfil do usuário"""
-
-        base_menu = [
-            "1. Escolher Perfil"
-        ]
-
-        if self.current_user_role == UserRole.CLIENTE:
-            return base_menu
-        
-        if self.current_user_role == UserRole.ADM:
-            return base_menu + [
-                "2. Adicionar Contato",
-                "3. Listar contatos", 
-                "4. Adicionar lead",
-                "5. Converter lead em contato",
-                "6. Registrar atividade",
-                "7. Criar tarefa",
-                "8. Completar tarefa",
-                "9. Atualizar estágio de venda",
-                "10. Criar campanha de email",
-                "11. Enviar campanha de email",
-                "12. Adicionar documento",
-                "13. Listar documentos",
-                "14. Relatórios e Analytics",
-                "15. Iniciar servidor online",
-                "16. Sair"
-            ]
-        elif self.current_user_role == UserRole.VENDEDOR:
-            return base_menu + [
-                "2. Adicionar Contato",
-                "3. Listar contatos",
-                "4. Registrar atividade",
-                "5. Criar tarefa", 
-                "6. Completar tarefa",
-                "7. Atualizar estágio de venda",
-                "8. Adicionar documento",
-                "9. Relatórios básicos",
-                "10. Sair"
-            ]
-        else:  #MARKETING
-            return base_menu + [
-                "2. Adicionar lead",
-                "3. Converter lead em contato",
-                "4. Listar contatos",
-                "5. Criar campanha de email",
-                "6. Enviar campanha de email",
-                "7. Relatórios de campanhas",
-                "8. Sair"
-            ]
+        """Retorna opções de menu delegando a construção para o strategy"""
+        strategy = self._menu_strategies.get(self.current_user_role, ClienteMenuStrategy())
+        return strategy.get_menu()        
     
     def _normalize_text(self, text, case="none"):
         if not text:

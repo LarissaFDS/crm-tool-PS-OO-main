@@ -98,9 +98,10 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
 
 #### 2. **Strategy** 
 - **Propósito**: Varia independentemente do que é utilizado.
-- **Por que usar**: 
+- **Por que usar**: Principio aberto/fechado, responsabilidade única e facilidade na manutenção.
 - **Localização**: 
-
+   - `core/strategy.py`: Implementação do strategy (possibilita criação de novos perfis).
+   - `core/crm.py`: Delega a construção para o strategy. Não precisa modificar o get_menu_by_role().
 
 #### 3. **Observer**
 - **Propósito**: Define a dependência de um para muitos. (atualiza tudo)
