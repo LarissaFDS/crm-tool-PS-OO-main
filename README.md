@@ -105,8 +105,11 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
 
 #### 3. **Observer**
 - **Propósito**: Define a dependência de um para muitos. (atualiza tudo)
-- **Por que usar**: 
+- **Por que usar**: Desacopla a lógica principal, principio aberto/fechado e melhora a manutenibilidade.
 - **Localização**: 
+   - `core/observer.py`: Definição das interfaces e dos observers concretos.
+   - `core/crm.py`: A classe CRM atua como o Subject, notificando os observers sobre eventos importantes.
+   - `main.py`: Chamada da aplicação, onde os observers são "inscritos" no CRM.
 
 ## 🏗️ Estrutura do Projeto
 

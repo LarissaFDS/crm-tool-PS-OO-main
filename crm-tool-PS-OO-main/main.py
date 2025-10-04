@@ -2,7 +2,9 @@ import os
 
 from core.crm import CRM
 from models.base import UserRole
+
 from core.commands import *
+from core.observer import EmailNotifier, AnalyticsUpdater, SalesNotifier
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -23,6 +25,15 @@ class MenuInvoker:
 
 def main():
     crm = CRM()
+    
+    email_service = EmailNotifier()
+    analytics_service = AnalyticsUpdater()
+    sales_team_channel = SalesNotifier()
+    
+    crm.attach(email_service)
+    crm.attach(analytics_service)
+    crm.attach(sales_team_channel)
+    
     invoker = MenuInvoker()
     exit_command = ExitCommand(crm)
 

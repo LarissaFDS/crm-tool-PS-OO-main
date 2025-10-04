@@ -13,8 +13,20 @@
         "Prospecto"
       ],
       "created_at": "18/09/2025",
-      "activities": [],
-      "tasks": [],
+      "activities": [
+        {
+          "type": "tarefa_concluida",
+          "description": "Tarefa concluída: Teste",
+          "date": "03/10/2025 23:33"
+        }
+      ],
+      "tasks": [
+        {
+          "title": "Teste",
+          "date": "",
+          "completed": true
+        }
+      ],
       "documents": []
     },
     {

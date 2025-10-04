@@ -12,11 +12,12 @@ from models.task import Task
 from models.factory import PessoaFactoryManager
 from models.builder import create_contact, create_lead, create_campaign, get_director
 
-from .strategy import *
+from .strategy import * #sei que nao é uma boa maneira, mas tava com preguiça
+from .observer import Subject, Observer
 
 DATA_FILE = Path(__file__).resolve().parent.parent / "crm_data.json"
 
-class CRM:
+class CRM(Subject):
     _instance = None
     _initialized = False
     def __new__ (cls, *args, **kwargs):
@@ -40,6 +41,8 @@ class CRM:
                 UserRole.MARKETING: MarketingMenuStrategy(),
                 UserRole.VENDEDOR: VendedorMenuStrategy()
             }
+            
+            self._observers: list[Observer] = []
             
             self.load_data()
 
@@ -236,6 +239,20 @@ class CRM:
         except ValueError as e:
             print(f"Erro: {e}")
 
+    def attach(self, observer):
+        self._observers.append(observer)
+        
+    def detach(self, observer):
+        self._observers.remove(observer)
+    
+    def notify(self, event, data):
+        for observer in self._observers:
+            try:
+                if observer.can_handle(event):
+                    observer.update(self, event, data)
+            except Exception as e:
+                print(f"Erro ao notificar {observer.__class__.__name__}: {e}")
+        
     def converter_lead(self):
         ativos = [l for l in self.leads if not l.converted]
         if not ativos:
@@ -266,6 +283,7 @@ class CRM:
                 lead.converted = True
                 self.save_data()
                 print("Lead convertido em contato!")
+                self.notify(event="lead_converted", data=contato) #observer
             else:
                 print("Lead inválido.")
         except (ValueError, IndexError):
@@ -282,8 +300,16 @@ class CRM:
             if 0 <= idx < len(self.contatos):
                 tipo = self._get_normalized_input("Tipo (chamada/email/reunião): ", case="lower")
                 desc = self._get_normalized_input("Descrição: ")
-                self.contatos[idx].activities.append(Atividade(tipo, desc))
+                
+                new_activity = Atividade(tipo, desc)
+                self.contatos[idx].activities.append(new_activity)
                 self.save_data()
+                
+                self.notify("activity_added", {
+                    "contato": self.contatos[idx],
+                    "activity": new_activity
+                })
+                
                 print("Atividade registrada!")
             else:
                 print("Contato inválido.")
@@ -345,6 +371,12 @@ class CRM:
                 )
                 
                 self.save_data()
+                
+                self.notify("task_completed", {
+                    "contato": contato,
+                    "task": tarefa_concluida
+                })
+                
                 print(f"✅ Tarefa '{tarefa_concluida.title}' marcada como concluída!")
                 print("📝 Atividade de conclusão registrada automaticamente.")
             else:
@@ -361,15 +393,27 @@ class CRM:
         try:
             idx_input = self._get_normalized_input("Escolha o contato (número): ")
             idx = int(idx_input) - 1
+            
             if 0 <= idx < len(self.contatos):
+                contato = self.contatos[idx]
+                old_stage = contato.sales_stage
                 print(f"Estágios: {[stage.value for stage in SalesStage]}")
                 novo = self._get_normalized_input("Novo estágio: ", case="title")
+                
                 if novo not in [stage.value for stage in SalesStage]:
                     print ("Erro: Estágio inválido :(\n)")
                     return
+                
                 self.contatos[idx].sales_stage = novo
                 self.contatos[idx].stage_history.append(novo)
                 self.save_data()
+                
+                self.notify("stage_changed",{
+                    "contato": contato,
+                    "old_stage": old_stage,
+                    "new_stage": novo
+                })
+                
                 print("Estágio de venda atualizado!")
             else:
                 print("Contato inválido.")
