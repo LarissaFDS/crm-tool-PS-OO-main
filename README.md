@@ -111,6 +111,31 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
    - `core/crm.py`: A classe CRM atua como o Subject, notificando os observers sobre eventos importantes.
    - `main.py`: Chamada da aplicação, onde os observers são "inscritos" no CRM.
 
+
+### Structural Patterns
+
+#### 1. **Facade**
+- **Propósito**: 
+- **Por que usar**: 
+- **Localização**: 
+   - `.py`: 
+   - `.py`: 
+
+#### 2. **Decorator** 
+- **Propósito**: 
+- **Por que usar**: 
+- **Localização**: 
+   - `.py`: 
+   - `.py`: 
+
+#### 3. **Adapter**
+- **Propósito**:
+- **Por que usar**: 
+- **Localização**: 
+   - `.py`: 
+   - `.py`:
+   - `.py`:
+
 ## 🏗️ Estrutura do Projeto
 
 ```
