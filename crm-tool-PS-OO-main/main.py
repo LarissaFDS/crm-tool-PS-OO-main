@@ -1,6 +1,6 @@
 import os
 
-from core.crm import CRM
+from core.facade_crm import CRMFacade
 from models.base import UserRole
 
 from core.commands import *
@@ -24,7 +24,7 @@ class MenuInvoker:
             print("Opção inválida :(")
 
 def main():
-    crm = CRM()
+    crm = CRMFacade()
     
     email_service = EmailNotifier()
     analytics_service = AnalyticsUpdater()
@@ -38,10 +38,11 @@ def main():
     exit_command = ExitCommand(crm)
 
     while not exit_command.should_exit:
-        clear_screen()
+        #clear_screen()
         
         if crm.current_user_role is None:
             crm.change_user_role()
+            print(f"teste {crm.current_user_role}")
             continue
         
         invoker = MenuInvoker() #a cada interação reinicia e registra os comandos para o perfil atual
@@ -84,10 +85,12 @@ def main():
             invoker.register_command("7", ReportSummaryCommand(crm))
             invoker.register_command("8", exit_command)
             
+        print("TESTE")
         menu_options = crm.get_menu_by_role()
         print(f"\n--- CRM - {crm.current_user_role.value.upper()} ---")
         for option in menu_options:
             print(option)
+        print("teste")
             
         opcao = input("Escolha uma opção: ")
         invoker.execute_command(opcao)

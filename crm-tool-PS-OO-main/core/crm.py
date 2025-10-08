@@ -150,7 +150,6 @@ class CRM(Subject):
             print(f"{i+1}. {c.name} - {c.email} - {c.sales_stage}")
 
     def change_user_role(self):
-        """trocar o perfil do usuário"""
         print("\nPerfis disponíveis:")
         print("1. Gerente")
         print("2. Vendedor") 
@@ -158,6 +157,7 @@ class CRM(Subject):
         choice = self._get_normalized_input("Escolha seu perfil: ")
         
         if choice == "1":
+            print("chega aqui?")
             self.current_user_role = UserRole.ADM
         elif choice == "2":
             self.current_user_role = UserRole.VENDEDOR
@@ -167,7 +167,6 @@ class CRM(Subject):
         print(f"Perfil alterado para: {self.current_user_role.value}")
 
     def add_document(self):
-        """Adiciona documento ao sistema"""
         print("\n=== Novo Documento ===")
         title = self._get_normalized_input("Título do documento: ", case="title")
         file_path = self._get_normalized_input("Caminho do arquivo: ")
@@ -195,7 +194,6 @@ class CRM(Subject):
         print("Documento adicionado com sucesso!")
 
     def list_documentos(self):
-        """Lista todos os documentos"""
         if not self.documents:
             print("Nenhum documento encontrado.")
             return
