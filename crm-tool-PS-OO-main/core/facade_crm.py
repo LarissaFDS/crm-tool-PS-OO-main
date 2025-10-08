@@ -4,8 +4,8 @@ class CRMFacade:
     def __init__(self):
         self._crm = CRM()
         self._CRMFacade = self
-        self.current_user_role = self._crm.current_user_role
-        self.menu_options = self
+        self.current_user_role = None
+        self.menu_options = {}
         
     def save_data(self):
         self._crm.save_data()
@@ -16,11 +16,12 @@ class CRMFacade:
     def add_contato(self):
         self._crm.add_contato()
         
-    def listar_contato(self):
+    def listar_contatos(self):
         self._crm.listar_contatos()
         
     def change_user_role(self):
         self._crm.change_user_role()
+        self.current_user_role = self._crm.current_user_role
         
     def add_document(self):
         self._crm.add_document()
@@ -65,4 +66,4 @@ class CRMFacade:
         self._crm.report_summary()
     
     def get_menu_by_role(self):
-        self._crm.get_menu_by_role()
+        return self._crm.get_menu_by_role()

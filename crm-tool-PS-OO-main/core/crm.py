@@ -545,7 +545,6 @@ class CRM(Subject):
                 print(f"{estagio}: {qtd} contato(s)")
 
     def get_menu_by_role(self):
-        """Retorna opções de menu delegando a construção para o strategy"""
         strategy = self._menu_strategies.get(self.current_user_role, ClienteMenuStrategy())
         return strategy.get_menu()        
     
