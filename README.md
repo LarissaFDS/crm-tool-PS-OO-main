@@ -115,7 +115,6 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
 ### Structural Patterns
 
 #### 1. **Facade** 
-   obs.: tem um pequeno bug, vou ajeitar dps.
 - **Propósito**:  Para facilitar a manuntenção.
 - **Por que usar**: porque ajuda na interface do sistema, simplificando o codigo.
 - **Localização**: 

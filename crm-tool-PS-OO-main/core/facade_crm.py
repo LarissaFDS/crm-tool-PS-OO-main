@@ -5,7 +5,6 @@ class CRMFacade:
         self._crm = CRM()
         self._CRMFacade = self
         self.current_user_role = None
-        self.menu_options = {}
         
     def save_data(self):
         self._crm.save_data()

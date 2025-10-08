@@ -157,7 +157,6 @@ class CRM(Subject):
         choice = self._get_normalized_input("Escolha seu perfil: ")
         
         if choice == "1":
-            print("chega aqui?")
             self.current_user_role = UserRole.ADM
         elif choice == "2":
             self.current_user_role = UserRole.VENDEDOR
