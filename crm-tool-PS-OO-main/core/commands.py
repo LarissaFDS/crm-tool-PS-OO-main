@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+import time
+
 from .crm import CRM
 from app import inicio
 
@@ -79,3 +81,33 @@ class ExitCommand(Command):
         self._crm.save_data()
         print("Saindo... dados salvos.")
         self.should_exit = True
+        
+        
+#DECORATOR
+class CommandDecorator(Command):
+    def __init__(self, wrapped_command: Command):
+        super().__init__(wrapped_command._crm)
+        self._wrapped_command = wrapped_command
+        
+    @abstractmethod
+    def execute(self) -> None:
+        pass
+    
+class LoggingCommandDecorator(CommandDecorator):
+    def __init__(self, wrapped_command):
+        super().__init__(wrapped_command)
+        
+    def execute(self):
+        command_name = self._wrapped_command.__class__.__name__
+        print(f"\n--- [LOG] iniciando: {command_name} ---")
+        start_time = time.time()
+        
+        try:
+            self._wrapped_command.execute()
+            end_time = time.time()
+            duration = end_time - start_time
+            print(f"--- [LOG] finalizado: {command_name} (duração: {duration:.4f}s) ---")
+        
+        except Exception as e:
+            print(f"--- [LOG] ERRO em {command_name}: {e} ---")
+            raise e

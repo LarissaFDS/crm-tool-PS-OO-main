@@ -115,18 +115,18 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
 ### Structural Patterns
 
 #### 1. **Facade** 
-- **Propósito**:  Para facilitar a manuntenção.
-- **Por que usar**: porque ajuda na interface do sistema, simplificando o codigo.
+- **Propósito**: Fornecer uma interface simplificada e unificada para o subsistema principal do CRM, portanto facilita a manuntenção.
+- **Por que usar**: porque ajuda na interface do sistema, simplificando o codigo. Além de reduzir o acoplamento entre o código cliente e as classes internas.
 - **Localização**: 
    - `core/facade.py`: Implementação do facade.
    - `main.py`: Chamada da fachada.
 
 #### 2. **Decorator** 
-- **Propósito**: 
-- **Por que usar**: 
+- **Propósito**: Adicionar dinamicamente novos comportamentos aos comandos do sistema, sem modificar suas classes originais.
+- **Por que usar**: Permite que comandos do CRM recebam comportamentos extras sem alterar seu código-fonte.
 - **Localização**: 
-   - `.py`: 
-   - `.py`: 
+   - `core/commands.py`:  : Implementação do decorator LoggingCommandDecorator, que adiciona logs de execução aos comandos.
+   - `main.py`: Onde o decorator é aplicado ao registrar os comandos
 
 #### 3. **Adapter**
 - **Propósito**:
