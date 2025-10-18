@@ -79,13 +79,18 @@ class CRM(Subject):
                 #for contato in self.contatos:
                 #   print(f"Nome: {contato.name}, ID na memória: {contato.id}, Tipo do ID: {type(contato.id)}")
                 #print("---------------------------------------------------\n")
-        except Exception as e:
-            print(f"--- DEBUG: Erro ao processar o JSON: {e} ---")
+        except FileNotFoundError:
+            print(f"ERRO CRÍTICO: Arquivos de dados '{DATA_FILE.name}' não foi encontrado, mas existia antes.")
+            self.contatos, self.campanhas, self.leads, self.documents = [], [], [], []
             
-            self.contatos = []
-            self.campanhas = []
-            self.leads = []
-            self.documents = []
+        except json.JSONDecodeError:
+            print(f"ERRO CRÍTICO: O arquivo de dados '{DATA_FILE.name}' está corrompido (JSON inválido).")
+            print("Carregando o sistema com dados vazios para evitar perda de dados.")
+            self.contatos, self.campanhas, self.leads, self.documents = [], [], [], []
+             
+        except Exception as e:
+            print(f"--- DEBUG: Erro inesperado ao carregar dados: {e} ---")
+            self.contatos, self.campanhas, self.leads, self.documents = [], [], [], []
 
     def add_contato(self):
         print("\n=== Novo contato ===")
@@ -180,18 +185,28 @@ class CRM(Subject):
         #Opção de associar a um contato
         print("\nDeseja associar a um contato? (s/n)")
         response = self._get_normalized_input("", case="lower")
+        associado = False #flag pra controlar a mensagem final
+        
         if response == 's':
             self.listar_contatos()
             try:
                 idx_input = self._get_normalized_input("Escolha o contato (número): ")
                 idx = int(idx_input) - 1
-                if 0 <= idx < len(self.contatos):
-                    self.contatos[idx].documents.append(doc)
-            except (ValueError, IndexError):
-                print("Contato inválido, documento salvo apenas no sistema.")
+                
+                contato_selecionado = self.contatos[idx]
+                
+                contato_selecionado.documents.append(doc)
+                print(f"Documento associado ao contato {contato_selecionado.name}.")
+                associado = True
+            
+            except ValueError:
+                print(f"\nERRO: '{idx_input}' não é um número. Documento salvo sem associação.")
+            except IndexError:
+                print(f"\nERRO: O número {idx + 1} não está na lista. Documento salvo sem associação.")
         
         self.save_data()
-        print("Documento adicionado com sucesso!")
+        if not associado:
+            print("Documento adicionado ao sistema, mas sem associação.")
 
     def list_documentos(self):
         if not self.documents:
@@ -276,32 +291,33 @@ class CRM(Subject):
         print("\n=== Leads para Converter ===")
         for i, l in enumerate(ativos):
             print(f"{i+1}. {l.name} - {l.email} - Fonte: {l.source}")
+        
         try:
             idx_input = self._get_normalized_input("Escolha um lead (número): ")
             idx = int(idx_input) - 1
-            if 0 <= idx < len(ativos):
-                lead = ativos[idx]
-                telefone = self._get_normalized_input("Telefone: ")
-                empresa = self._get_normalized_input("Empresa (opcional): ", case="title")
-                notes = f"Convertido de lead (Fonte: {lead.source})"
-                
-                contato = PessoaFactoryManager.create_person(
-                    'contato',
-                    name=lead.name,
-                    email=lead.email,
-                    telefone=telefone,
-                    empresa=empresa,
-                    notas=notes
-                )
-                self.contatos.append(contato)
-                lead.converted = True
-                self.save_data()
-                print("Lead convertido em contato!")
-                self.notify(event="lead_converted", data=contato) #observer
-            else:
-                print("Lead inválido.")
-        except (ValueError, IndexError):
-            print("Entrada inválida.")
+            lead = ativos[idx]
+            telefone = self._get_normalized_input("Telefone: ")
+            empresa = self._get_normalized_input("Empresa (opcional): ", case="title")
+            notes = f"Convertido de lead (Fonte: {lead.source})"
+            
+            contato = PessoaFactoryManager.create_person(
+                'contato',
+                name=lead.name,
+                email=lead.email,
+                telefone=telefone,
+                empresa=empresa,
+                notas=notes
+            )
+            self.contatos.append(contato)
+            lead.converted = True
+            self.save_data()
+            print("Lead convertido em contato!")
+            self.notify(event="lead_converted", data=contato) #observer
+            
+        except ValueError:
+            print(f"\nERRO: '{idx_input}' não é um número. Por favor, digite um número da lista.")
+        except IndexError:
+            print(f"\nERRO: O número {idx + 1} não está na lista. Tente novamente.")
 
     def add_atividade(self):
         if not self.contatos:
@@ -311,25 +327,33 @@ class CRM(Subject):
         try:
             idx_input = self._get_normalized_input("Escolha o contato (número): ")
             idx = int(idx_input) - 1
-            if 0 <= idx < len(self.contatos):
-                tipo = self._get_normalized_input("Tipo (chamada/email/reunião): ", case="lower")
-                desc = self._get_normalized_input("Descrição: ")
-                
-                new_activity = Atividade(tipo, desc)
-                self.contatos[idx].activities.append(new_activity)
-                self.save_data()
-                
-                self.notify("activity_added", {
-                    "contato": self.contatos[idx],
-                    "activity": new_activity
-                })
-                
-                print("Atividade registrada!")
-            else:
-                print("Contato inválido.")
-        except (ValueError, IndexError):
-            print("Entrada inválida.")   
-
+            #if 0 <= idx < len(self.contatos):
+            contato_selecionado = self.contatos[idx]
+            #agora continua se conseguiu pegar a entrada, converter para numero e acessa o contato
+            
+            tipo = self._get_normalized_input("Tipo (chamada/email/reunião): ", case="lower")
+            desc = self._get_normalized_input("Descrição: ")
+            
+            new_activity = Atividade(tipo, desc)
+            contato_selecionado.activities.append(new_activity)
+            self.save_data()
+            
+            self.notify("activity_added", {
+                "contato": self.contatos[idx],
+                "activity": new_activity
+            })
+            
+            print("Atividade registrada!")
+           # else:
+           #     print("Contato inválido.")
+        #except (ValueError, IndexError):
+            #print("Entrada inválida.")   
+        #separei para mensagens mais claras    
+        except ValueError:
+            print(f"\n ERRO: '{idx_input}' não é um número. Por favor digite um número da lista.")
+        except IndexError:
+            print(f"\nERRO: O número '{idx + 1}' não está na lista. Tente novamente.")
+        
     def add_task(self):
         if not self.contatos:
             print("Nenhum contato cadastrado.")
@@ -338,67 +362,78 @@ class CRM(Subject):
         try:
             idx_input = self._get_normalized_input("Escolha o contato (número): ")
             idx = int(idx_input) - 1
-            if 0 <= idx < len(self.contatos):
-                titulo = self._get_normalized_input("Título da tarefa: ", case="title")
-                data = self._get_normalized_input("Data (dd/mm/aaaa): ")
-                self.contatos[idx].tasks.append(Task(titulo, data))
-                self.save_data()
-                print("Tarefa adicionada!")
-            else:
-                print("Contato inválido.")
-        except (ValueError, IndexError):
-            print("Entrada inválida.")
+            #mesma coisa do add_atividade
+            task_selecionada = self.contatos[idx].tasks
+            
+            titulo = self._get_normalized_input("Título da tarefa: ", case="title")
+            data = self._get_normalized_input("Data (dd/mm/aaaa): ")
+            task_selecionada.append(Task(titulo, data))
+            self.save_data()
+            print("Tarefa adicionada!")
+                
+        except ValueError:
+            print(f"\n ERRO: '{idx_input}' não é um número. Por favor digite um número da lista.")
+        except IndexError:
+            print(f"\nERRO: O número '{idx + 1}' não está na lista. Tente novamente.")
+        
                 
     def completar_task(self):
         if not self.contatos:
             print("Nenhum contato cadastrado.")
             return
-            
+        #aqui são 2 input, entao dividi em varias partes    
         self.listar_contatos()
         try:
             idx_input = self._get_normalized_input("Escolha o contato para ver as tarefas (número): ")
             idx = int(idx_input) - 1
-            if not (0 <= idx < len(self.contatos)):
-                print("Contato inválido.")
-                return
-                
-            contato = self.contatos[idx]
-            tarefas_pendentes = [task for task in contato.tasks if not task.completed]
+        except ValueError:
+            print(f"\n ERRO: '{idx_input}' não é um número. Por favor digite um número da lista.")
+            return
+        
+        if not (0 <= idx < len(self.contatos)):
+            print(f"\nERRO: O número {idx+1} não está na lista de contatos. Tente novamente." )
+            return
             
-            if not tarefas_pendentes:
-                print(f"O contato {contato.name} não possui tarefas pendentes.")
-                return
-                
-            print(f"\n--- Tarefas Pendentes de {contato.name} ---")
-            for i, task in enumerate(tarefas_pendentes):
-                print(f"{i+1}. {task.title} - Data: {task.date}")
-                
+        contato = self.contatos[idx]
+        #segunda parte
+        tarefas_pendentes = [task for task in contato.tasks if not task.completed]
+        
+        if not tarefas_pendentes:
+            print(f"O contato {contato.name} não possui tarefas pendentes.")
+            return
+            
+        print(f"\n--- Tarefas Pendentes de {contato.name} ---")
+        for i, task in enumerate(tarefas_pendentes):
+            print(f"{i+1}. {task.title} - Data: {task.date}")
+        
+        try:    
             task_idx_input = self._get_normalized_input("Escolha a tarefa para marcar como concluída (número): ")
             task_idx = int(task_idx_input) - 1
+        
+        except ValueError:
+            print(f"\nERRO: '{task_idx_input}' não é um número. Por favor, digite um número da lista de tarefas.")
+            return
+        
+        if 0 <= task_idx < len(tarefas_pendentes):
+            tarefa_concluida = tarefas_pendentes[task_idx]
+            tarefa_concluida.completed = True
             
-            if 0 <= task_idx < len(tarefas_pendentes):
-                tarefa_concluida = tarefas_pendentes[task_idx]
-                tarefa_concluida.completed = True
-                
-                contato.activities.append(
-                    Atividade("tarefa_concluida", f"Tarefa concluída: {tarefa_concluida.title}")
-                )
-                
-                self.save_data()
-                
-                self.notify("task_completed", {
-                    "contato": contato,
-                    "task": tarefa_concluida
-                })
-                
-                print(f"✅ Tarefa '{tarefa_concluida.title}' marcada como concluída!")
-                print("📝 Atividade de conclusão registrada automaticamente.")
-            else:
-                print("Seleção de tarefa inválida.")
-                
-        except (ValueError, IndexError):
-            print("Entrada inválida.")
-
+            contato.activities.append(
+                Atividade("tarefa_concluida", f"Tarefa concluída: {tarefa_concluida.title}")
+            )
+            
+            self.save_data()
+            
+            self.notify("task_completed", {
+                "contato": contato,
+                "task": tarefa_concluida
+            })
+            
+            print(f"✅ Tarefa '{tarefa_concluida.title}' marcada como concluída!")
+            print("📝 Atividade de conclusão registrada automaticamente.")
+        else:
+            print(f"\nERRO: O número {task_idx + 1} não está na lista de tarefas. Tente novamente.")
+            
     def update_sales_stage(self):
         if not self.contatos:
             print("Nenhum contato cadastrado.")
@@ -407,32 +442,34 @@ class CRM(Subject):
         try:
             idx_input = self._get_normalized_input("Escolha o contato (número): ")
             idx = int(idx_input) - 1
+        
+        except ValueError:
+            print(f"\n ERRO: '{idx_input}' não é um número. Por favor digite um número da lista.")
+            return
             
-            if 0 <= idx < len(self.contatos):
-                contato = self.contatos[idx]
-                old_stage = contato.sales_stage
-                print(f"Estágios: {[stage.value for stage in SalesStage]}")
-                novo = self._get_normalized_input("Novo estágio: ", case="title")
-                
-                if novo not in [stage.value for stage in SalesStage]:
-                    print ("Erro: Estágio inválido :(\n)")
-                    return
-                
-                self.contatos[idx].sales_stage = novo
-                self.contatos[idx].stage_history.append(novo)
-                self.save_data()
-                
-                self.notify("stage_changed",{
-                    "contato": contato,
-                    "old_stage": old_stage,
-                    "new_stage": novo
-                })
-                
-                print("Estágio de venda atualizado!")
-            else:
-                print("Contato inválido.")
-        except (ValueError, IndexError):
-            print("Entrada inválida.")
+        if 0 <= idx < len(self.contatos):
+            contato = self.contatos[idx]
+            old_stage = contato.sales_stage
+            print(f"Estágios: {[stage.value for stage in SalesStage]}")
+            novo = self._get_normalized_input("Novo estágio: ", case="title")
+            
+            if novo not in [stage.value for stage in SalesStage]:
+                print ("Erro: Estágio inválido :(\n)")
+                return
+            
+            self.contatos[idx].sales_stage = novo
+            self.contatos[idx].stage_history.append(novo)
+            self.save_data()
+            
+            self.notify("stage_changed",{
+                "contato": contato,
+                "old_stage": old_stage,
+                "new_stage": novo
+            })
+            
+            print("Estágio de venda atualizado!")
+        else:
+             print(f"\nERRO: O número {idx + 1} não está na lista de contatos. Tente novamente.")
 
     def add_email_campanha(self):
         print("\n=== Nova campanha de email ===")
@@ -497,42 +534,44 @@ class CRM(Subject):
         try:
             idx_input = self._get_normalized_input("Escolha a campanha (número): ")
             idx = int(idx_input) - 1
-            if 0 <= idx < len(self.campanhas):
-                campanha = self.campanhas[idx]
-                enviados = 0
+        except ValueError:
+            print(f"\n ERRO: '{idx_input}' não é um número. Por favor digite um número da lista.")
+            return
+        
+        if 0 <= idx < len(self.campanhas):
+            campanha = self.campanhas[idx]
+            enviados = 0
+            
+            #print(f"\nDEBUG Processando campanha: {campanha.title}")
+            #print(f"DEBUG Estágio alvo: '{campanha.target_stage}'")
+            
+            for contato in self.contatos:
+                #Normaliza ambos os estágios para comparação
+                contato_stage_norm = self._normalize_text(contato.sales_stage, case="title")
+                target_stage_norm = self._normalize_text(campanha.target_stage, case="title")
                 
-                #print(f"\nDEBUG Processando campanha: {campanha.title}")
-                #print(f"DEBUG Estágio alvo: '{campanha.target_stage}'")
+                #print(f"DEBUG Contato: {contato.name} - Estágio: '{contato_stage_norm}' vs Alvo: '{target_stage_norm}'")
                 
-                for contato in self.contatos:
-                    #Normaliza ambos os estágios para comparação
-                    contato_stage_norm = self._normalize_text(contato.sales_stage, case="title")
-                    target_stage_norm = self._normalize_text(campanha.target_stage, case="title")
-                    
-                    #print(f"DEBUG Contato: {contato.name} - Estágio: '{contato_stage_norm}' vs Alvo: '{target_stage_norm}'")
-                    
-                    stage_match = (contato_stage_norm == target_stage_norm or target_stage_norm == "Todos")
-                    not_sent = contato.id not in campanha.sent_to
-                    
-                    if stage_match and not_sent:
-                        campanha.sent_to.append(contato.id)
-                        contato.activities.append(Atividade("Email", f"Enviado: {campanha.title}"))
-                        enviados += 1
-                    #   print(f" DEBUG ✓ Email enviado para {contato.name}")
-                    #elif not not_sent:
-                    #   print(f"DEBUG - Email já enviado para {contato.name}")
-                    #else:
-                    #   print(f"DEBUG - {contato.name} não se encaixa no critério")
+                stage_match = (contato_stage_norm == target_stage_norm or target_stage_norm == "Todos")
+                not_sent = contato.id not in campanha.sent_to
                 
-                if enviados > 0:
-                    self.save_data()
-                    print(f"\nCampanha enviada com sucesso para {enviados} contato(s).")
-                else:
-                    print("\nNenhum contato encontrado para esta campanha.")
+                if stage_match and not_sent:
+                    campanha.sent_to.append(contato.id)
+                    contato.activities.append(Atividade("Email", f"Enviado: {campanha.title}"))
+                    enviados += 1
+                #   print(f" DEBUG ✓ Email enviado para {contato.name}")
+                #elif not not_sent:
+                #   print(f"DEBUG - Email já enviado para {contato.name}")
+                #else:
+                #   print(f"DEBUG - {contato.name} não se encaixa no critério")
+            
+            if enviados > 0:
+                self.save_data()
+                print(f"\nCampanha enviada com sucesso para {enviados} contato(s).")
             else:
-                print("Campanha inválida.")
-        except (ValueError, IndexError):
-            print("Entrada inválida.")
+                print("\nNenhum contato encontrado para esta campanha.")
+        else:
+             print(f"\nERRO: O número {idx + 1} não está na lista de campanhas. Tente novamente.")
 
     def report_summary(self):
         print("\n=== Relatório Geral ===")
