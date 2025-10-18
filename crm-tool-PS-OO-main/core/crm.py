@@ -14,6 +14,7 @@ from models.builder import create_contact, create_lead, create_campaign, get_dir
 
 from .strategy import * #sei que nao é uma boa maneira, mas tava com preguiça
 from .observer import Subject, Observer
+from .adapters import LeadAdapter
 
 DATA_FILE = Path(__file__).resolve().parent.parent / "crm_data.json"
 
@@ -236,6 +237,22 @@ class CRM(Subject):
         except ValueError as e:
             print(f"Erro: {e}")
 
+    def add_lead_from_external_source(self, lead_adapter: LeadAdapter):
+        print("\n=== Importando lead externo (via adapter) ===")
+        try:
+            compatible_data = lead_adapter.get_crm_compatible_data()
+            new_lead = PessoaFactoryManager.create_person(
+                'lead',
+                **compatible_data
+            )
+            
+            self.leads.append(new_lead)
+            self.save_data()
+            print(f"✅ Lead importado e adaptado com sucesso! ({new_lead.name})")
+
+        except Exception as e: 
+            print(f"Erro inesperado durante adaptação: {e}")
+        
     def attach(self, observer):
         self._observers.append(observer)
         

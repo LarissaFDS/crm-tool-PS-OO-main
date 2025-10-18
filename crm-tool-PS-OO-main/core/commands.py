@@ -3,6 +3,7 @@ import time
 
 from .crm import CRM
 from app import inicio
+from .adapters import ExternalLeadSystemAdapter, LeadAdapter
 
 class Command(ABC):
     def __init__(self, crm_receiver: CRM):
@@ -81,8 +82,23 @@ class ExitCommand(Command):
         self._crm.save_data()
         print("Saindo... dados salvos.")
         self.should_exit = True
+   
+   
+#para o ADAPTER        
+class ImportExternalLeadCommand(Command):
+    def execute(self):
+        print("\nSimulação de importação externa:")
+        print("Recebendo dados do 'palestra' (formato incompatível)...")
         
+        external_data = {
+            "full_name": "Jane Smith (palestra)",
+            "contact_email": "jane.smith@palestra.com",
+            "origin_platform": "palestra"
+        }
         
+        adapter = ExternalLeadSystemAdapter(external_data)
+        self._crm.add_lead_from_external_source(adapter)
+  
 #DECORATOR
 class CommandDecorator(Command):
     def __init__(self, wrapped_command: Command):

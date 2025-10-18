@@ -28,8 +28,9 @@ class AdminMenuStrategy(MenuStrategy):
             "12. Adicionar documento",
             "13. Listar documentos",
             "14. Relatórios e Analytics",
-            "15. Iniciar servidor online",
-            "16. Sair"
+            "15. Importar lead externo",
+            "16. Iniciar servidor online",
+            "17. Sair"
         ]
         
 class VendedorMenuStrategy(MenuStrategy):

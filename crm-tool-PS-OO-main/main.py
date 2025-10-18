@@ -62,8 +62,9 @@ def main():
             invoker.register_command("12", LoggingCommandDecorator(AddDocumentCommand(crm)))
             invoker.register_command("13", LoggingCommandDecorator(ListDocumentsCommand(crm)))
             invoker.register_command("14", LoggingCommandDecorator(ReportSummaryCommand(crm)))
-            invoker.register_command("15", LoggingCommandDecorator(StartServerCommand(crm)))
-            invoker.register_command("16", exit_command)
+            invoker.register_command("15", LoggingCommandDecorator(ImportExternalLeadCommand(crm)))
+            invoker.register_command("16", LoggingCommandDecorator(StartServerCommand(crm)))
+            invoker.register_command("17", exit_command)
         
         elif crm.current_user_role == UserRole.VENDEDOR:
             invoker.register_command("2", LoggingCommandDecorator(AddContactCommand(crm)))

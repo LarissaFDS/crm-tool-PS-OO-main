@@ -125,16 +125,16 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
 - **Propósito**: Adicionar dinamicamente novos comportamentos aos comandos do sistema, sem modificar suas classes originais.
 - **Por que usar**: Permite que comandos do CRM recebam comportamentos extras sem alterar seu código-fonte.
 - **Localização**: 
-   - `core/commands.py`:  : Implementação do decorator LoggingCommandDecorator, que adiciona logs de execução aos comandos.
-   - `main.py`: Onde o decorator é aplicado ao registrar os comandos
+   - `core/commands.py`:  : Implementação do decorator.LoggingCommandDecorator, que adiciona logs de execução aos comandos.
+   - `main.py`: Onde o decorator é aplicado ao registrar os comandos.
 
 #### 3. **Adapter**
-- **Propósito**:
-- **Por que usar**: 
+- **Propósito**: Permitir que interfaces incompatíveis trabalhem juntas, traduzindo dados de um formato externo.
+- **Por que usar**: Para integrar o CRM com fontes de dados externas sem precisar modificar o código-fonte do subsistema principal.
 - **Localização**: 
-   - `.py`: 
-   - `.py`:
-   - `.py`:
+   - `core/adapters.py`: Implementação da interface do adapter e do adapter concreto
+   - `core/crm.py`: Método que utiliza o objeto adapter para receber os dados traduzidos.
+   - `core/commands.py`: Comando que instancia o adapter com os dados externos e o repassa para o CRM.
 
 ## 🏗️ Estrutura do Projeto
 

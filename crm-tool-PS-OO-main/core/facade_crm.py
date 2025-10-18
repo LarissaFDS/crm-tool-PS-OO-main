@@ -1,4 +1,4 @@
-from core.crm import CRM
+from .crm import CRM
 
 class CRMFacade:
     def __init__(self):
@@ -30,6 +30,9 @@ class CRMFacade:
         
     def add_lead(self):
         self._crm.add_lead()
+        
+    def add_lead_from_external_source(self, lead_adapter):
+        self._crm.add_lead_from_external_source(lead_adapter)    
         
     def attach(self, email_service):
         self._crm.attach(email_service)
