@@ -1,6 +1,6 @@
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
-![Status](https://img.shields.io/badge/Status-Em%20Desenvolvimento-yellow.svg)
+![Status](https://img.shields.io/badge/Status-Conclu%C3%ADdo-green.svg)
 
 # Sistema de Gerenciamento de Relacionamento com o Cliente (CRM)
 
