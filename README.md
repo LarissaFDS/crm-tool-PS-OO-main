@@ -136,12 +136,40 @@ Sistema de CRM (Customer Relationship Management) desenvolvido em Python como pr
    - `core/crm.py`: Método que utiliza o objeto adapter para receber os dados traduzidos.
    - `core/commands.py`: Comando que instancia o adapter com os dados externos e o repassa para o CRM.
 
+## ✅ Tratamento de exceção
+
+### Validators.py
+- Utilizado para as seguintes validações:
+   - Validação de email.
+   - Validação de nome.
+   - Validação de data.
+   - Validação de telefone.
+   - Validação de texto.
+   - Validação de escolha.
+   - Validação de input.
+
+- Local onde utilizo:
+   - crm.py porque é onde se localiza todos os possíveis erros.
+
+### Tratamentos convecionais
+#### Além dos tratamentos personalizados, implementei alguns que são do python ou de alguma biblioteca específica, como:
+- except FileNotFoundError, caso o arquivo não seja encotrado.
+- except json.JSONDecodeError, caso o arquivo esteja corrompido.
+- except Exception as e, caso aconteça um erro inesperado.
+- except ValueError, o valor esteja errado.
+- except ValidationError as e, caso aconteça um erro de validação.
 ## 🏗️ Estrutura do Projeto
 
 ```
 crm-tool-PS-OO/
 ├── 📁 core/
 │   ├── __init__.py
+│   ├── adapters.py
+│   ├── commands.py
+│   ├── facade_crm.py
+│   ├── observer.py
+│   ├── strategy.py
+│   ├── validators.py
 │   └── crm.py                # Classe principal do CRM (Singleton)
 ├── 📁 models/
 │   ├── __init__.py
@@ -160,6 +188,7 @@ crm-tool-PS-OO/
 ├── LICENSE                   # Licença MIT
 ├── README.md                 # Documentação
 └── crm_data.json             # Persistência de dados
+└── README.md                 # Documentação
 ```
 
 ## 💻 Como Usar
